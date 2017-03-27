@@ -210,6 +210,19 @@ class Database(object):
         finally:
 
             connection.close()
+            
+    def exectute_transaction(self, query):
+
+        if self._engine is None:
+
+            errStr = "No connection has been made."
+            raise IOError(errStr)
+            
+        # runs a transaction
+        with self._engine.begin() as connection:
+            connection.execute(query)
+            
+        return
 
     def call_stored_proceedure(self, proceedure_name, proceedure_args):
 
@@ -400,9 +413,12 @@ class PostgreSQL(Database):
         
         return table
 
-    def get_table_names(self):
+    def get_table_names(self, schema=None):
 
-        query_str = "SELECT table_name FROM information_schema.tables;"
+        query_str = "SELECT table_name FROM information_schema.tables"
+        if schema is not None: query_str += (" WHERE table_schema = "
+                                             "'{}'").format(schema)
+        query_str += ";"
 
         table_names = self._get_first_entries(query_str)
 
