@@ -73,7 +73,7 @@ class CleanPyc(Command):
                 yield os.path.join(root, fname)
  
 setup(name='aneris',
-      version='0.9.1',
+      version='0.10.0.dev0',
       description='aneris.py: multi-client data coupling agent',
       author='Mathew Toppper',
       author_email='mathew.topper@tecnalia.com',
