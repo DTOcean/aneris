@@ -6,7 +6,6 @@
 
 import os
 import pytest
-pytest.importorskip("dtocean_demo")
 
 from aneris.control.sockets import NamedSocket
 
@@ -42,16 +41,6 @@ def test_get_providing_interfaces():
     providers = interface.get_providing_interfaces(test_var)
 
     assert 'SPTInterface' in providers
-    
-def test_get_receiving_interfaces():
-
-    test_var = 'demo:demo:high'
-    
-    interface = NamedSocket("DemoInterface")
-    interface.discover_interfaces(interfaces)
-    receivers = interface.get_receiving_interfaces(test_var)
-
-    assert "TableInterface" in receivers
     
 def test_get_interface_object():
     

@@ -24,14 +24,14 @@ Note:
 
 .. module:: demo
    :platform: Windows
-   :synopsis: Aneris interface for dtocean_demo package
+   :synopsis: Aneris interface for dtocean_dummy package
    
 .. moduleauthor:: Mathew Topper <mathew.topper@tecnalia.com>
 """
 
 
 from aneris.boundary.interface import MapInterface, MaskVariable
-from dtocean_demo import Spreadsheet
+from dtocean_dummy import Spreadsheet
 
 class DemoInterface(MapInterface):
     
@@ -41,7 +41,7 @@ class DemoInterface(MapInterface):
 
 class TableInterface(DemoInterface):
     
-    '''Interface to the Spreadsheet class of dtocean_demo, providing a table
+    '''Interface to the Spreadsheet class of dtocean_dummy, providing a table
     of random numbers.
           
     '''

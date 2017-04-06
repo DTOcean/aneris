@@ -6,7 +6,6 @@ Created on Wed Jan 21 17:28:04 2015
 """
 
 import pytest
-pytest.importorskip("dtocean_demo")
 
 from aneris.control.pipeline import Sequencer
 

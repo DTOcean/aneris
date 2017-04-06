@@ -6,9 +6,10 @@ Created on Wed Jan 21 17:28:04 2015
 """
 
 import pytest
-pytest.importorskip("dtocean_demo")
+pytest.importorskip("dtocean_dummy")
 
 from aneris.control.simulation import Controller, Loader
+from aneris.control.sockets import NamedSocket
 from aneris.control.pipeline import Sequencer
 from aneris.control.data import DataValidation, DataStorage
 from aneris.entity import Simulation
@@ -47,11 +48,19 @@ def controller():
                          sequencer)  
     
     return control
+
+def test_get_receiving_interfaces():
+
+    test_var = 'demo:demo:high'
+    
+    interface = NamedSocket("DemoInterface")
+    interface.discover_interfaces(interfaces)
+    receivers = interface.get_receiving_interfaces(test_var)
+
+    assert "TableInterface" in receivers
     
 def test_get_next_interface(controller):
-    
-    pool = DataPool()
-                   
+                       
     catalog = DataCatalog()
     validation = DataValidation(meta_cls=data_plugins.MyMetaData)
     validation.update_data_catalog_from_definitions(catalog,
