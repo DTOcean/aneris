@@ -306,40 +306,9 @@ class PostgreSQL(Database):
         return "postgres"
         
     @property
-    def default_schema(self):
-
-        return "public"
-
-    @property
     def valid_adapters(self):
 
         return ["psycopg2"]
-        
-    def _init_credentials(self):
-
-        credentials_dict = {'host':     None,
-                            'port':     None,
-                            'dbname':   None,
-                            'schema':   None,
-                            'user':     None,
-                            'pwd':      None
-                            }
-
-        return credentials_dict
-        
-    def get_credentials(self):
-
-        default_dict = {'host':     None,
-                        'port':     self.default_port,
-                        'dbname':   self.default_database,
-                        'schema':   self.default_schema,
-                        'user':     self.default_user_id,
-                        'pwd':      self.default_password
-                        }
-
-        credentials = safe_update(default_dict, self._credentials)
-
-        return credentials
         
     def get_connection_string(self):
 
@@ -375,32 +344,23 @@ class PostgreSQL(Database):
         return
         
     def reflect_table(self, table_name,
+                            schema="public",
                             remove_trailing_space=True):
-                                
-        credentials = self.get_credentials()
-        schema = credentials["schema"]
-
-        kwargs = {"autoload": True,
-                  "autoload_with": self._engine}
             
         # Sanitise the table names if required
         if remove_trailing_space: table_name = table_name.rstrip()
 
         reflected = Table(table_name,
                           self._meta,
-                          schema=schema,
-                          **kwargs)
+                          schema=schema)
 
         return reflected
         
-    def safe_reflect_table(self, table_name):
+    def safe_reflect_table(self, table_name, schema="public"):
         
         '''If the table is already in the meta data take that version rather
         than reflecting again.'''
         
-        credentials = self.get_credentials()
-        schema = credentials["schema"]
-                        
         meta_name = "{}.{}".format(schema, table_name)
                     
         if meta_name in self._meta.tables:
@@ -412,9 +372,21 @@ class PostgreSQL(Database):
             table = self.reflect_table(table_name)
         
         return table
+    
+    def drop_columns(self, table_name, column_list, schema="public"):
+        
+        table_name = "{}.{}".format(schema, table_name)
+
+        for column_name in column_list:
+                
+            query_str = ('ALTER TABLE {} DROP COLUMN '
+                         '"{}";').format(table_name, column_name)
+            self.exectute_transaction(query_str)
+            
+        return
 
     def get_table_names(self, schema=None):
-
+        
         query_str = "SELECT table_name FROM information_schema.tables"
         if schema is not None: query_str += (" WHERE table_schema = "
                                              "'{}'").format(schema)
@@ -423,6 +395,18 @@ class PostgreSQL(Database):
         table_names = self._get_first_entries(query_str)
 
         return table_names
+    
+    def get_column_names(self, table, schema=None):
+
+        query_str = ("SELECT column_name FROM information_schema.columns "
+                     "WHERE table_name = '{}'").format(table)
+        if schema is not None: query_str += (" AND table_schema = "
+                                             "'{}'").format(schema)
+        query_str += ";"
+
+        column_names = self._get_first_entries(query_str)
+
+        return column_names
 
     def get_db_names(self):
 
