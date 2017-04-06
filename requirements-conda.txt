@@ -1,0 +1,17 @@
+# REQUIREMENTS FOR CONDA INSTALLATION
+
+# INSTALLATION REQUIRED DEPENDENCIES
+attrdict
+numpy
+openpyxl
+pandas
+polite >=0.9
+pywin32
+pyyaml
+sqlalchemy
+xlrd
+xlwt
+
+# TEST DEPENDENCIES
+pytest-cov
+dtocean-dummy-module
