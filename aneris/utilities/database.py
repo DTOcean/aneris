@@ -349,11 +349,15 @@ class PostgreSQL(Database):
             
         # Sanitise the table names if required
         if remove_trailing_space: table_name = table_name.rstrip()
+        
+        kwargs = {"autoload": True,
+                  "autoload_with": self._engine,
+                  "schema": schema}
 
         reflected = Table(table_name,
                           self._meta,
-                          schema=schema)
-
+                          **kwargs)
+        
         return reflected
         
     def safe_reflect_table(self, table_name, schema="public"):
@@ -369,7 +373,7 @@ class PostgreSQL(Database):
             
         else:
             
-            table = self.reflect_table(table_name)
+            table = self.reflect_table(table_name, schema)
         
         return table
     
