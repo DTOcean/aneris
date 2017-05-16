@@ -750,7 +750,7 @@ class Controller(Loader):
                                simulation,
                                hub_id,
                                interface_name,
-                               all_unavailable=None):
+                               all_overwritten=None):
 
         """Get all inputs required for the module, as a dictionary with the
         value representing a status of required, satisfied or unavailable
@@ -758,9 +758,9 @@ class Controller(Loader):
         Note:
           Inputs to completed interfaces are marked as unavailable.
           Inputs to interfaces that are inputs or outputs of preceding 
-            interfaces are marked as unavailable.
+            interfaces are marked as overwritten.
           Optional inputs to interfaces that are outputs of preceding 
-            interfaces are marked as unavailable_option.
+            interfaces are marked as overwritten_option.
         
         """
         
@@ -800,7 +800,7 @@ class Controller(Loader):
 
 
             # Get all the outputs provided for the proceeding items
-            if all_unavailable == None: all_unavailable = []
+            if all_overwritten == None: all_overwritten = []
 
             for interface_obj in preceeding_interfaces.itervalues():
                 
@@ -809,10 +809,10 @@ class Controller(Loader):
                                                       simulation,
                                                       prec_input_declaration)
                 
-                all_unavailable.extend(prec_inputs)
+                all_overwritten.extend(prec_inputs)
 
                 outputs = interface_obj.get_outputs()
-                all_unavailable.extend(outputs)
+                all_overwritten.extend(outputs)
 
             # Inputs are required unless optional
             input_status = {}
@@ -827,17 +827,17 @@ class Controller(Loader):
 
                     input_status[input_id] = "required"
 
-            for var_id in all_unavailable:
+            for var_id in all_overwritten:
 
                 if var_id in input_status.keys():
                     
                     if var_id in optional_inputs:
                     
-                        input_status[var_id] = "unavailable_option"
+                        input_status[var_id] = "overwritten_option"
                     
                     else:
                     
-                        input_status[var_id] = "unavailable"
+                        input_status[var_id] = "overwritten"
 
             # Update the input and output status if the data is in the data
             # state                
