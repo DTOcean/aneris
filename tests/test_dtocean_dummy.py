@@ -95,6 +95,32 @@ def test_input_status(controller):
     status = set(input_status.values())
 
     assert 'required' == status.pop() 
+    
+    
+def test_input_status_overwritten(controller):
+        
+    pool = DataPool()
+
+    new_sim = Simulation("Hello World!")
+    controller.create_new_pipeline(new_sim, "DemoInterface", "demo_pipe")
+                                                  
+    controller.sequence_interface(new_sim,
+                                  "demo_pipe",
+                                  "Spreadsheet Generator")
+                                                
+    controller.sequence_interface(new_sim,
+                                  "demo_pipe",
+                                  "Later Interface")
+    
+    input_status = controller.get_input_status(pool,
+                                               new_sim,
+                                               "demo_pipe",
+                                               "Later Interface")
+    
+    input_status_values = set(input_status.values())
+
+    assert "overwritten" in input_status_values
+    
 
 def test_input_status_trigger(catalog, controller):
     

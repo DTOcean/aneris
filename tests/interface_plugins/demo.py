@@ -160,7 +160,7 @@ class LaterInterface(DemoInterface):
         
         '''
 
-        input_list  =  []
+        input_list = ['demo:demo:rows']
                         
         return input_list
 
@@ -186,7 +186,8 @@ class LaterInterface(DemoInterface):
     @classmethod 
     def declare_id_map(cls):
 
-        id_map = {'table': 'demo:demo:table'}
+        id_map = {'rows': 'demo:demo:rows',
+                  'table': 'demo:demo:table'}
                   
         return id_map
                  
