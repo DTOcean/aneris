@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add Database.exectute_transaction method which will commit a query immediately
   without returning results.
   
+### Changed
+
+- Changed labelling of inputs in an interface in a pipeline that appear in a
+  previous interface to say "overwritten" rather than "unavailable".
+  
 ### Fixed
   
 - Removed unnecessary psycopg2 import

@@ -7,6 +7,13 @@
 #      general configuration      #
 #---------------------------------#
 
+# Build only for commits to certain locations
+only_commits:
+  files:
+    - aneris/
+    - tests/
+    - setup.py
+
 # version format
 version: 0.10.0.dev0.build{build}
 
@@ -38,7 +45,7 @@ install:
 build: off
   
 test_script:
-  - py.test --cov=aneris tests
+  - py.test --cov aneris tests
   
 after_test:
  - pip install codecov
