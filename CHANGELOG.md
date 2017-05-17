@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add gitignore.
 - Add change log.
-- Add Database.exectute_transaction method which will commit a query immediately
+- Add Database.execute_transaction method which will commit a query immediately
   without returning results.
   
 ### Changed

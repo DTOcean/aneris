@@ -800,7 +800,7 @@ class Controller(Loader):
 
 
             # Get all the outputs provided for the proceeding items
-            if all_overwritten == None: all_overwritten = []
+            if all_overwritten is None: all_overwritten = []
 
             for interface_obj in preceeding_interfaces.itervalues():
                 

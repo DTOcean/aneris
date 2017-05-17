@@ -210,7 +210,7 @@ class Database(object):
 
             connection.close()
             
-    def exectute_transaction(self, query):
+    def execute_transaction(self, query):
 
         if self._engine is None:
 
@@ -384,7 +384,7 @@ class PostgreSQL(Database):
                 
             query_str = ('ALTER TABLE {} DROP COLUMN '
                          '"{}";').format(table_name, column_name)
-            self.exectute_transaction(query_str)
+            self.execute_transaction(query_str)
             
         return
 
