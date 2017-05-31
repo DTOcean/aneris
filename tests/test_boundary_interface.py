@@ -65,7 +65,6 @@ def test_FileInterface_check_path_fail_missing(tmpdir):
     test_interface = 'SPTInterface'
     test_path = tmpdir.mkdir("sub").join("test.spt")
     test_path_str = str(test_path)
-    print test_path.check()
     
     interface = NamedSocket("FileInterface")
     interface.discover_interfaces(interfaces)

@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
   
 - Removed unnecessary psycopg2 import
+- Fixed bug in FileInterface.check_path
 
 ## [0.9.1] - 2017-01-04
 
