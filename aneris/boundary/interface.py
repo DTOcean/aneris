@@ -696,9 +696,9 @@ class FileInterface(MapInterface):
         
         if file_ext not in self.get_valid_extensions():
             
-            extStr = ", ".format(self.get_valid_extensions())
+            extStr = ", ".join(self.get_valid_extensions())
             errStr = ("File extension '{}' is not valid. Available are "
-                      "'{}'").format(extStr)
+                      "'{}'").format(file_ext, extStr)
                       
             raise IOError(errStr)
             
