@@ -507,21 +507,41 @@ class DataStorage(Plugin):
             load_path = os.path.join(root_dir, file_path)
             
         data_structure = self.get_structure(structure_name)
-        data = data_structure.load_data(load_path)
-
+        
+        try:
+            data = data_structure.load_data(load_path)
+        except TypeError:
+            warnStr = "Unpickling of data with id {} failed".format(
+                                                        data_box.identifier)
+            module_logger.warn(warnStr)
+            data = None
+    
         # Create and store the data object
-        data_obj = self._make_data(data_catalog, data_box.identifier, data)
-        data_pool.replace(data_index, data_obj)
+        data_obj = self._make_data(data_catalog,
+                                   data_box.identifier,
+                                   data,
+                                   warn_missing=True)
+        
+        if data_obj is None:
+            warnStr = ("No valid data object found for data with index "
+                       "{}").format(data_index)
+            module_logger.warn(warnStr)
+        else:
+            data_pool.replace(data_index, data_obj)
 
         return
 
-    def _make_data(self, data_catalog, identifier, data):
+    def _make_data(self, data_catalog, identifier, data, warn_missing=False):
         
         if not self.is_valid(data_catalog, identifier):
 
-            errStr = "Data {} not in data catalog. Aborting.".format(
-                                                                identifier)
-            raise ValueError(errStr)
+            msgStr = "Data {} not found in data catalog".format(identifier)
+            
+            if warn_missing:
+                module_logger.warn(msgStr)
+                return None
+            else:
+                raise ValueError(msgStr)
             
         metadata = data_catalog.get_metadata(identifier)
         
