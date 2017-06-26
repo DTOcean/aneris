@@ -80,6 +80,33 @@ class Hub(object):
             raise KeyError(errStr)
 
         return
+    
+    def refresh_interface(self, interface_cls_name, interface_obj):
+        
+        """Replace the interface object for a given class name.
+        
+        Args:
+          interface_cls_name (str): The name of the interface class
+          interface_obj (aneris.boundary.interface.Interface): An object of 
+            the interface class
+            
+        """
+        
+        if interface_cls_name in self._scheduled_interface_map:
+            
+            self._scheduled_interface_map[interface_cls_name] = interface_obj
+            
+        elif interface_cls_name in self._completed_interface_map:
+            
+            self._completed_interface_map[interface_cls_name] = interface_obj
+            
+        else:
+            
+            errStr = ("Class {} not found in interface "
+                      "maps.").format(interface_cls_name)
+            raise KeyError(errStr)
+
+        return
         
     def get_interface_obj(self, interface_cls_name):
         

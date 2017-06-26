@@ -155,6 +155,23 @@ class Sequencer(object):
             interface_name = interface_list[0]
 
         return interface_name
+    
+    def refresh_interfaces(self, hub):
+        
+        completed_names = self.get_completed_names(hub)
+        sequenced_names = self.get_sequenced_names(hub)
+        
+        all_names = completed_names + sequenced_names
+        
+        for interface_name in all_names:
+            
+            (interface_cls_name,
+             interface_obj) = self._get_interface(hub, interface_name)
+
+            # Store an object of the interface
+            hub.refresh_interface(interface_cls_name, interface_obj)
+            
+        return
         
     def is_available(self, hub, interface_name):
 
@@ -216,16 +233,8 @@ class Sequencer(object):
 
         """Sequence an interface for execution."""
 
-        socket = self.get_socket(hub.interface_type)
-        interface_cls_name = self.get_cls_name(hub, interface_name)
-
-        if interface_cls_name is None:
-            
-            errStr = "Interface {} is not type {}".format(interface_name,
-                                                          hub.interface_type)
-            raise ValueError(errStr)
-        
-        interface_obj = socket.get_interface_object(interface_cls_name)
+        interface_cls_name, interface_obj = self._get_interface(hub,
+                                                                interface_name)
 
         # Store an object of the interface
         hub.add_interface(interface_cls_name, interface_obj)
@@ -280,5 +289,20 @@ class Sequencer(object):
         result = [k for k, v in names_dict.items() if v in value_list]
 
         return result
+    
+    def _get_interface(self, hub, interface_name):
+        
+        socket = self.get_socket(hub.interface_type)
+        interface_cls_name = self.get_cls_name(hub, interface_name)
+
+        if interface_cls_name is None:
+            
+            errStr = "Interface {} is not type {}".format(interface_name,
+                                                          hub.interface_type)
+            raise ValueError(errStr)
+        
+        interface_obj = socket.get_interface_object(interface_cls_name)
+        
+        return interface_cls_name, interface_obj
 
 
