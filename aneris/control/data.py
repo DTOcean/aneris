@@ -391,13 +391,17 @@ class DataStorage(Plugin):
     def deserialise_data(self, data_catalog,
                                data_pool,
                                data_indexes,
-                               root_dir=None):
+                               root_dir=None,
+                               warn_missing=False,
+                               warn_unpickle=False):
 
         for data_index in data_indexes:
             self._convert_box_to_data(data_catalog,
                                       data_pool,
                                       data_index,
-                                      root_dir)
+                                      root_dir,
+                                      warn_missing=warn_missing,
+                                      warn_unpickle=warn_unpickle)
 
         return
         
@@ -414,12 +418,16 @@ class DataStorage(Plugin):
         
     def deserialise_pool(self, data_catalog,
                                data_pool,
-                               root_dir=None):
+                               root_dir=None,
+                               warn_missing=False,
+                               warn_unpickle=False):
                                                                   
         self.deserialise_data(data_catalog,
                               data_pool,
                               data_pool,
-                              root_dir)
+                              root_dir,
+                              warn_missing=warn_missing,
+                              warn_unpickle=warn_unpickle)
 
         return
 
@@ -492,7 +500,9 @@ class DataStorage(Plugin):
     def _convert_box_to_data(self, data_catalog,
                                    data_pool,
                                    data_index,
-                                   root_dir=None):
+                                   root_dir=None,
+                                   warn_missing=False,
+                                   warn_unpickle=False):
                                   
         data_box = data_pool.get(data_index)
         
@@ -511,16 +521,19 @@ class DataStorage(Plugin):
         try:
             data = data_structure.load_data(load_path)
         except TypeError:
-            warnStr = "Unpickling of data with id {} failed".format(
+            msgStr = "Unpickling of data with id {} failed".format(
                                                         data_box.identifier)
-            module_logger.warn(warnStr)
-            data = None
+            if warn_unpickle:
+                module_logger.warn(msgStr)
+                data = None
+            else:
+                raise TypeError(msgStr)
     
         # Create and store the data object
         data_obj = self._make_data(data_catalog,
                                    data_box.identifier,
                                    data,
-                                   warn_missing=True)
+                                   warn_missing=warn_missing)
         
         if data_obj is None:
             warnStr = ("No valid data object found for data with index "

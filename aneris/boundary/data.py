@@ -17,7 +17,7 @@ import pickle
 import datetime as dt
 from numbers import Number
 
-from polite.paths import object_dir, user_data_dir
+from polite.paths import object_dir, UserDataDirectory
 
 from ..utilities.files import yaml_to_py
 
@@ -92,10 +92,10 @@ class DataDefinition(object):
 
         if self.user_yaml_dir is None: return []
 
-        local_dir = user_data_dir(package=self.package_name,
-                                  company=self.company_name)
+        local_dir = UserDataDirectory(self.package_name,
+                                      self.company_name)
 
-        yaml_dir = os.path.join(local_dir, self.user_yaml_dir)
+        yaml_dir = os.path.join(local_dir.get_path(), self.user_yaml_dir)
         yaml_paths = self._get_yaml_paths(yaml_dir)
 
         return yaml_paths

@@ -49,4 +49,23 @@ def test_complete(sequencer):
     
     assert 'EarlyInterface' in hub._completed_interface_map.keys()
     assert hub._scheduled_interface_map.keys().index('LaterInterface') == 0
-
+                                            
+                                            
+def test_refresh(sequencer):
+    
+    hub = sequencer.create_new_hub("DummyInterface")
+    
+    sequencer.sequence(hub, "Early Interface")
+    sequencer.sequence(hub, "Later Interface")
+    sequencer.complete(hub, "Early Interface")
+    
+    next_interface = hub.get_next_scheduled()
+    before_object = hub.get_interface_obj(next_interface)
+    before_id = hex(id(before_object))
+    
+    sequencer.refresh_interfaces(hub)
+    
+    after_object = hub.get_interface_obj(next_interface)
+    after_id = hex(id(after_object))
+    
+    assert before_id != after_id

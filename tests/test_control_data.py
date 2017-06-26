@@ -374,7 +374,65 @@ def test_deserialise_pool(tmpdir):
 
     assert isinstance(new_data, Data)
     assert new_data._data == "Tidal"
+
+
+def test_deserialise_pool_warn_missing(tmpdir):
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    pool = DataPool()
+    state = DataState("test")
+    data_store.discover_structures(data)
     
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    data_store.create_new_data(pool, state, catalog, "Tidal", metadata)    
+    data_store.serialise_pool(pool, str(tmpdir))
+    
+    # Redefine the data stor
+    catalog = DataCatalog()
+    validation = DataValidation()
+    validation.update_data_catalog_from_definitions(catalog, user_data)
+    data_store = DataStorage(data)
+                              
+    with pytest.raises(ValueError):
+        data_store.deserialise_pool(catalog, pool)
+    
+    data_store.deserialise_pool(catalog, pool, warn_missing=True)
+    
+    assert True
+    
+    
+def test_deserialise_pool_warn_unpickle(tmpdir, mocker):
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    pool = DataPool()
+    state = DataState("test")
+    data_store.discover_structures(data)
+    
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    data_store.create_new_data(pool, state, catalog, "Tidal", metadata)
+
+    data_store.serialise_pool(pool,
+                              str(tmpdir))
+    
+    another_mock = mocker.Mock()
+    another_mock.load_data = mocker.Mock(side_effect=TypeError('Boom!'))
+    get_structure = mocker.patch.object(data_store, 'get_structure')
+    get_structure.return_value = another_mock
+                                
+    with pytest.raises(TypeError):
+        data_store.deserialise_pool(catalog, pool)
+        
+    data_store.deserialise_pool(catalog, pool, warn_unpickle=True)
+    
+    assert True
+
+
 def test_serialise_pool_root(tmpdir):
 
     catalog = DataCatalog()
