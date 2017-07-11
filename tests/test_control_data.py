@@ -588,4 +588,57 @@ def test_load_pool_root(tmpdir):
 
     assert isinstance(new_data, Data)
     assert new_data._data == "Tidal"
+    
+    
+def test_create_pool_subset():
 
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    pool = DataPool()
+    
+    # Get the meta data from the catalog
+    metadata = catalog.get_metadata("my:test:variable")
+    
+    # Create and store the first state
+    state1 = data_store.create_new_datastate("state1")
+    data_store.create_new_data(pool, state1, catalog, ["apples"], metadata)
+    
+    # Create and store the second state
+    state2 = data_store.create_new_datastate("state2")
+    data_store.create_new_data(pool,
+                               state2,
+                               catalog,
+                               ["apples", "pears"],
+                               metadata)
+
+    assert len(pool) == 2
+    
+    # Create a subset based on the second state
+    new_pool, new_state = data_store.create_pool_subset(pool, state2)
+    
+    assert id(new_pool) != id(pool)
+    assert len(new_pool) == 1
+    
+    orig_data_index = state2.get_index("my:test:variable")
+    orig_data_obj = pool.get(orig_data_index)
+    
+    new_data_index = new_state.get_index("my:test:variable")
+    new_data_obj = new_pool.get(new_data_index)
+    
+    assert id(orig_data_obj._data) != id(new_data_obj._data)
+    
+    orig_data_value = data_store.get_data_value(pool,
+                                                state2,
+                                                "my:test:variable")
+    
+    new_data_value = data_store.get_data_value(new_pool,
+                                               new_state,
+                                               "my:test:variable")
+    
+    assert len(orig_data_value) == 2
+    assert orig_data_value == new_data_value
+    
+    assert id(state2) != id(new_state)
+    assert set(state2.get_identifiers()) == set(new_state.get_identifiers())

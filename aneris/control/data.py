@@ -10,8 +10,9 @@ module_logger = logging.getLogger(__name__)
 
 import os
 import traceback
+from copy import deepcopy
 
-from ..entity.data import Data, DataState, MetaData
+from ..entity.data import Data, DataPool, DataState, MetaData
 from ..boundary.data import SerialBox
 from ..utilities.plugins import (Plugin,
                                  create_object_list)
@@ -430,6 +431,26 @@ class DataStorage(Plugin):
                               warn_unpickle=warn_unpickle)
 
         return
+    
+    def create_pool_subset(self, data_pool, datastate):
+        
+        new_pool = DataPool()
+        new_datastate = DataState()
+        
+        var_ids = datastate.get_identifiers()
+        
+        for var_id in var_ids:
+            
+            data_index = datastate.get_index(var_id)
+            data_obj = data_pool.get(data_index)
+            new_data_obj = deepcopy(data_obj)
+            
+            self.add_data_to_state(new_pool,
+                                   new_datastate,
+                                   var_id,
+                                   new_data_obj)
+            
+        return new_pool, new_datastate
 
     @classmethod
     def is_valid(cls, data_catalog, variable_id):
