@@ -2,7 +2,7 @@
 - identifier: "my:test:variable"
   name: "Test"
   units: "Test"
-  structure: "Test"
+  structure: "UnitData"
 - identifier: "Technology:Common:DeviceType"
   name: "Device Type"
   units: "-"

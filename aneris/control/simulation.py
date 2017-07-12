@@ -47,23 +47,17 @@ class Loader(object):
         
     def has_data(self, simulation, data_identity):
         
-        merged_state = simulation.get_merged_state()
-
-        if merged_state is None:
-            merged_state = self._merge_active_states(simulation)
+        merged_state = self.create_merged_state(simulation)
+        result = self._store.has_data(merged_state, data_identity)
                                                      
-        return self._store.has_data(merged_state, data_identity)
+        return result
 
     def get_data_value(self, pool, simulation, data_identity):
         
         log_msg = 'Retrieving data with identity "{}".'.format(data_identity)
         module_logger.debug(log_msg)
         
-        merged_state = simulation.get_merged_state()
-
-        if merged_state is None:
-            merged_state = self._merge_active_states(simulation)
-                        
+        merged_state = self.create_merged_state(simulation)
         data_value = self._store.get_data_value(pool,
                                                 merged_state,
                                                 data_identity)
@@ -96,13 +90,14 @@ class Loader(object):
                                                 simulation,
                                                 input_declaration)
                                                       
-        merged_state = simulation.get_merged_state()
-
+        merged_state = self.create_merged_state(simulation)
+        
         if merged_state is None:
-            merged_state = self._merge_active_states(simulation)
+            state_data_ids = set()
+        else:
+            state_data_ids = set(merged_state.get_identifiers())
                                                                 
         required_inputs = set(active_inputs) - set(optional_inputs)
-        state_data_ids = set(merged_state.get_identifiers())
         
         if required_inputs <= state_data_ids:
             result = True
@@ -144,6 +139,18 @@ class Loader(object):
             interface.put_data(putvar, data_value)
             
         return interface
+    
+    def create_merged_state(self, simulation, use_existing=True):
+        
+        if use_existing:
+            merged_state = simulation.get_merged_state()
+        else:
+            merged_state = None
+
+        if merged_state is None:
+            merged_state = self._merge_active_states(simulation)
+            
+        return merged_state
         
     def serialise_states(self, simulation,
                                state_dir="states",
@@ -244,10 +251,7 @@ class Loader(object):
                     input_ids.append(declared_input.variable_id)
                     continue
                 
-                merged_state = simulation.get_merged_state()
-
-                if merged_state is None:
-                    merged_state = self._merge_active_states(simulation)
+                merged_state = self.create_merged_state(simulation)
                 
                 if merged_state is None: continue
                     
@@ -353,7 +357,7 @@ class Loader(object):
         state_dict = state.dump()
         
         with open(file_path, 'wb') as json_file:
-                json.dump(state_dict, json_file)
+            json.dump(state_dict, json_file)
                         
         load_dict = {"file_path": store_path}
 
@@ -841,10 +845,7 @@ class Controller(Loader):
 
             # Update the input and output status if the data is in the data
             # state                
-            merged_state = simulation.get_merged_state()
-
-            if merged_state is None:
-                merged_state = self._merge_active_states(simulation)
+            merged_state = self.create_merged_state(simulation)
                 
             if merged_state is None:
                 return input_status
@@ -894,10 +895,7 @@ class Controller(Loader):
                                         for output_id in output_declaration}
         
         # Update the output status if the data is in the data state
-        merged_state = simulation.get_merged_state()
-
-        if merged_state is None:
-            merged_state = self._merge_active_states(simulation)
+        merged_state = self.create_merged_state(simulation)
             
         if merged_state is None:
             return output_status
