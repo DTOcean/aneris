@@ -616,6 +616,7 @@ class Controller(Loader):
                             identifiers=None,
                             values=None,
                             no_merge=False,
+                            use_objects=False,
                             log_exceptions=False):
         
         # We always create a new datastate
@@ -631,7 +632,7 @@ class Controller(Loader):
             errStr = "A DataCatelog must be provided to add data"
             raise ValueError(errStr)
         
-        for ident, raw_data in data_list:
+        for ident, data in data_list:
 
             # Test that the variable is in the data catalog
             if not self._store.is_valid(data_catalog, ident):
@@ -644,16 +645,24 @@ class Controller(Loader):
             # Get the meta data from the catalog
             metadata = data_catalog.get_metadata(ident)
             
-            if log_exceptions:
+            # Data is always stored using a datastate and the built-in
+            # data pool. If the use_objects flag is True then Data object
+            # creation is the responcibility of the caller
+            if use_objects:
+                
+                self._store.add_data_to_state(pool,
+                                              new_state,
+                                              ident,
+                                              data)
+                
+            elif log_exceptions:
                 
                 try:
                     
-                    # Data is always created and stored using a datastate and
-                    # then built in data pool
                     self._store.create_new_data(pool,
                                                 new_state,
                                                 data_catalog,
-                                                raw_data,
+                                                data,
                                                 metadata)
                     
                 except:
@@ -667,12 +676,10 @@ class Controller(Loader):
                 
             else:
     
-                # Data is always created and stored using a datastate and then
-                # built in data pool
                 self._store.create_new_data(pool,
                                             new_state,
                                             data_catalog,
-                                            raw_data,
+                                            data,
                                             metadata)
 
         # Add it to the simulation.

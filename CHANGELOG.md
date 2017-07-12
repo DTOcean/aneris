@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   without returning results.
 - Add Sequencer.refresh_interfaces and Hub.refresh_interface to replace
   interfaces in Hubs. Useful if interfaces have gone stale after saving.
+- Add create_pool_subset method to DataStorage class. Given a pool and 
+  datastate, his creates a new pool and datastate just containing the variables
+  in the datastate.
+- Added create_merged_state method to the Loader class. By default, this
+  generates a merged pseudo state from a given simulation unless the simulation
+  already has one stored.
   
 ### Changed
 
@@ -22,8 +28,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   previous interface to say "overwritten" rather than "unavailable".
 - In DataStorage._convert_box_to_data catch TypeErrors and pass with a warning
   when unpickling, if the warn_unpickle flag is True.
-- In DataStorage._make_data allow data not in the data catelogue to pass with a
+- In DataStorage._make_data allow data not in the data catalogue to pass with a
   warning if the warn_missing flag is True.
+- Modify add_datastate in the Controller class so that it can take Data objects
+  as the variable values in the use_objects flag is set to True.
   
 ### Fixed
   

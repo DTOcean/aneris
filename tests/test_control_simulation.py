@@ -91,6 +91,77 @@ def test_add_datastate(controller):
     assert pseudo_state.count() == 1
     assert len(series) == 64
     
+    
+def test_add_datastate_obj(controller):
+    
+    '''Test adding data to a data state using existing Data objects.'''
+    
+    pool = DataPool()
+    
+    test_interface = 'SPTInterface'
+    test_variable = 'site:wave:dir'
+    this_dir = os.path.dirname(__file__)
+    test_path = os.path.join(this_dir,
+                             '..',
+                             'data',
+                             'test_spectrum_30min.spt'
+                             )
+    
+    interfacer = NamedSocket("FileInterface")
+    interfacer.discover_interfaces(interfaces)
+    file_interface = interfacer.get_interface_object(test_interface)
+    file_interface.set_file_path(test_path)
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    # Get the raw data from the interface
+    file_interface.connect()
+    raw_data = file_interface.get_data(test_variable)
+    
+    new_sim = Simulation("Hello World!")
+    controller.add_datastate(pool,
+                             new_sim,
+                             "executed",
+                             catalog,
+                             [test_variable],
+                             [raw_data])
+    
+    pre_pool_length = len(pool)
+    
+    # Get the data objects from the first datastate and create a new datastate
+    # with them.
+    test_state = new_sim._active_states[-1]
+    
+    var_objs = []
+    
+    for var_id in test_state.get_identifiers():
+        
+        data_index = test_state.get_index(var_id)
+        data_obj = pool.get(data_index)
+        var_objs.append(data_obj)
+        
+    controller.add_datastate(pool,
+                             new_sim,
+                             data_catalog=catalog,
+                             identifiers=test_state.get_identifiers(),
+                             values=var_objs,
+                             use_objects=True)
+                                       
+    pseudo_state = controller._merge_active_states(new_sim)
+    
+    series = controller.get_data_value(pool,
+                                       new_sim,
+                                       'site:wave:dir')
+
+    assert len(pool) == 2 * pre_pool_length
+    assert check_integrity(pool, [new_sim])
+    assert pseudo_state.count() == 1
+    assert len(series) == 64
+
+    
 def test_copy_simulation(controller):
     
     '''Test copying a simulation.'''
