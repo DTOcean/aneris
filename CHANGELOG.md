@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   
 - Removed unnecessary psycopg2 import
 - Fixed bug in FileInterface.check_path
+- Ensure SerialBox is replaced if encountering unknown data identifier when
+  deserializing a data pool.
 
 ## [0.9.1] - 2017-01-04
 

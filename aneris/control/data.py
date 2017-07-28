@@ -557,11 +557,16 @@ class DataStorage(Plugin):
                                    warn_missing=warn_missing)
         
         if data_obj is None:
+            
             warnStr = ("No valid data object found for data with index "
                        "{}").format(data_index)
             module_logger.warn(warnStr)
-        else:
-            data_pool.replace(data_index, data_obj)
+            
+            data_obj = Data(data_box.identifier,
+                            structure_name,
+                            None)
+       
+        data_pool.replace(data_index, data_obj)
 
         return
 
