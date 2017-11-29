@@ -12,14 +12,22 @@ file system.
 
 import os
 import abc
+import sys
 import glob
 import pickle
 import datetime as dt
 from numbers import Number
 
+import pandas as pd
+import pandas.core.indexes 
+
 from polite.paths import object_dir, UserDataDirectory
 
 from ..utilities.files import yaml_to_py
+
+# Compatibility for old pandas versions
+sys.modules['pandas.indexes'] = pandas.core.indexes
+
 
 class DataDefinition(object):
 
@@ -132,12 +140,19 @@ class Structure(object):
         return file_path
         
     def load_data(self, file_path):
-                
-        with open(file_path, "rb") as fstream:
-            data = pickle.load(fstream)
             
         # Bypass the get_data method in this case, but it may be necesary to
-        # call it for loading from other file types.
+        # call it for loading from other file types. In some cases unpickling
+        # is unique, such as opening old versions of pandas dataframes.
+        
+        try:
+                
+            with open(file_path, "rb") as fstream:
+                data = pickle.load(fstream)
+                
+        except ImportError:
+            
+            data = pd.read_pickle(file_path)
 
         return data
         
