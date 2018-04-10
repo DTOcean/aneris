@@ -541,14 +541,15 @@ class DataStorage(Plugin):
         
         try:
             data = data_structure.load_data(load_path)
-        except TypeError:
-            msgStr = "Unpickling of data with id {} failed".format(
-                                                        data_box.identifier)
+        except Exception:
+            msgStr = ("Unpickling of data with id {} failed with an "
+                      "unexpected error:\n{}").format(data_box.identifier,
+                                                      traceback.format_exc())
             if warn_unpickle:
                 module_logger.warn(msgStr)
                 data = None
             else:
-                raise TypeError(msgStr)
+                raise Exception(msgStr)
     
         # Create and store the data object
         data_obj = self._make_data(data_catalog,
