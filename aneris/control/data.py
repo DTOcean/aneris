@@ -491,7 +491,8 @@ class DataStorage(Plugin):
     def _convert_data_to_box(self, data_pool,
                                    data_index,
                                    data_dir,
-                                   root_dir=None):
+                                   root_dir=None,
+                                   warn_save=True):
                                   
         data_obj = data_pool.get(data_index)
         
@@ -501,8 +502,18 @@ class DataStorage(Plugin):
         data_structure = self.get_structure(structure_name)
 
         root_path = os.path.join(data_dir, data_index)
-        file_path = data_structure.save_value(data_obj._data, root_path)
         
+        try:
+            file_path = data_structure.save_value(data_obj._data, root_path)
+        except Exception:
+            msgStr = ("Saving of data with index {} failed with an unexpected "
+                      "error:\n{}").format(data_index, traceback.format_exc())
+            if warn_save:
+                module_logger.warn(msgStr)
+                return
+            else:
+                raise Exception(msgStr)
+                
         if root_dir is None:
             store_path = file_path
         else:
