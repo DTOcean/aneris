@@ -252,7 +252,10 @@ class Hub(object):
         
         scheduled_keys = self._scheduled_interface_map.keys()
         
-        return scheduled_keys[0]
+        if scheduled_keys:
+            return scheduled_keys[0]
+        else:
+            return None
                 
     def get_last_completed(self):
         
