@@ -425,7 +425,7 @@ def test_deserialise_pool_warn_unpickle(tmpdir, mocker):
     get_structure = mocker.patch.object(data_store, 'get_structure')
     get_structure.return_value = another_mock
                                 
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):
         data_store.deserialise_pool(catalog, pool)
         
     data_store.deserialise_pool(catalog, pool, warn_unpickle=True)
