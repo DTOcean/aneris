@@ -42,7 +42,7 @@ def xl_to_dds(xl_path,
     '''Read an XL file and produce a dds list of the form expected by
     the DataDefinition boundary class'''
 
-    sheets = pd.read_excel(xl_path, sheetname=None, index_col=0)
+    sheets = pd.read_excel(xl_path, sheet_name=None, index_col=0)
     root_sheet = sheets.pop("ROOT", None)
     
     # Drop a column if ignore_column is given
@@ -370,7 +370,7 @@ def xl_merge(original_xl_path,
     if preserve_order:
         
         root_df = pd.read_excel(original_xl_path,
-                                sheetname="ROOT")
+                                sheet_name="ROOT")
         root_cols = root_df.columns.tolist()
         
     else:
