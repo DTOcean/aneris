@@ -25,14 +25,14 @@ class Socket(Plugin):
 
         return
 
-    def discover_interfaces(self, package, super_cls):
+    def discover_interfaces(self, package, super_cls, warn_import=False):
 
         '''Retrieve all of the interfaces. Should be abstract?'''
 
         log_msg = 'Searching for {} classes'.format(super_cls)
         module_logger.debug(log_msg)
 
-        cls_map = self._discover_plugins(package, super_cls)
+        cls_map = self._discover_plugins(package, super_cls, warn_import)
         self._interface_classes.update(cls_map)
 
         return

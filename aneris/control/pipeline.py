@@ -21,20 +21,23 @@ class Sequencer(object):
 
     def __init__(self, interface_types,
                        interface_module,
-                       sort_weighted=True):
+                       sort_weighted=True,
+                       warn_import=False):
 
         self._sockets = None
         self._names = None
         
         self._sockets, self._names = self._init_sockets(interface_types,
                                                         interface_module,
-                                                        sort_weighted)
+                                                        sort_weighted,
+                                                        warn_import)
 
         return
         
     def _init_sockets(self, interface_types,
                             interface_module,
-                            sort_weighted=True):
+                            sort_weighted=True,
+                            warn_import=False):
         
         """Create a socket classes to locate and communicate with the chosen
         interface class. Store name mappings.
@@ -47,7 +50,8 @@ class Sequencer(object):
         
             socket_obj = Socket()
             socket_obj.discover_interfaces(interface_module,
-                                           cls_name)
+                                           cls_name,
+                                           warn_import)
             names_map = socket_obj.get_interface_names(sort_weighted=True)
             
             dupes = names_map.values()

@@ -6,15 +6,20 @@ Created on Fri Jan 16 17:10:16 2015
 """
 
 import pyclbr
+import logging
 import pkgutil
+import traceback
 from importlib import import_module
+
+# Set up logging
+module_logger = logging.getLogger(__name__)
 
 
 class Plugin(object):
 
     '''Plugin discovery control classes.'''
 
-    def _discover_plugins(self, package, super_cls):
+    def _discover_plugins(self, package, super_cls, warn_import=False):
 
         '''Retrieve all of the matching subclass names found in the package'''
 
@@ -32,7 +37,8 @@ class Plugin(object):
 
             for cls_name in data_sub_mods:
 
-                cls_map[cls_name] = get_class_attr(cls_name, mod_name)
+                class_attr = get_class_attr(cls_name,mod_name, warn_import)
+                if class_attr is not None: cls_map[cls_name] = class_attr
 
         return cls_map
 
@@ -46,6 +52,7 @@ def get_module_names_from_package(package):
 
     return module_names
 
+
 def get_module_names_from_paths(package_paths, prefix=''):
 
     '''Return the names of modules in the given list of package paths'''
@@ -57,6 +64,7 @@ def get_module_names_from_paths(package_paths, prefix=''):
         module_names.append(modname)
 
     return module_names
+
 
 def get_class_descriptions_from_module(module_name):
 
@@ -71,6 +79,7 @@ def get_class_descriptions_from_module(module_name):
     clsmembers = pyclbr.readmodule(module_name)
 
     return clsmembers
+
 
 def get_subclass_names_from_module(module_name, super_name):
 
@@ -91,6 +100,7 @@ def get_subclass_names_from_module(module_name, super_name):
 
     return match_super
 
+
 def unroll_description(description, super_strs=None):
 
     '''Recurse through the pyclbr classes to find all base classes'''
@@ -110,6 +120,7 @@ def unroll_description(description, super_strs=None):
 
     return super_strs
 
+
 def create_object_map(class_map):
 
     '''Take a mapping of class and module names and return a similar mapping
@@ -122,6 +133,7 @@ def create_object_map(class_map):
         object_map[cls_name] = cls_attr()
 
     return object_map
+
 
 def create_object_list(class_map):
 
@@ -136,22 +148,36 @@ def create_object_list(class_map):
 
     return object_list
 
-def get_class_attr(cls_name, mod_name):
+
+def get_class_attr(cls_name, mod_name, warn_import=False):
 
     '''Return a class attribute from the class and module names.'''
 
-    module = get_module_attr(mod_name)
-    cls_attr = getattr(module, cls_name)
+    module = get_module_attr(mod_name, warn_import)
 
-    return cls_attr
+    if module is None:
+        return
+    else:
+        return getattr(module, cls_name)
 
-def get_module_attr(mod_name):
+
+def get_module_attr(mod_name, warn_import=False):
 
     '''Return a module attribute.'''
-
-    module = import_module(mod_name)
+    
+    try:
+        module = import_module(mod_name)
+    except Exception:
+        msgStr = ("Importing module {} failed with an unexpected "
+                  "error:\n{}").format(mod_name, traceback.format_exc())
+        if warn_import:
+            module_logger.warn(msgStr)
+            return
+        else:
+            raise Exception(msgStr)
 
     return module
+
 
 def get_public_attributes(cls_attr):
 
