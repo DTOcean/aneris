@@ -23,20 +23,16 @@ class Sequencer(object):
                        interface_module,
                        sort_weighted=True,
                        warn_import=False):
-
-        self._sockets = None
-        self._names = None
         
-        self._sockets, self._names = self._init_sockets(interface_types,
-                                                        interface_module,
-                                                        sort_weighted,
-                                                        warn_import)
-
+        self._sort_weighted = sort_weighted
+        self._sockets = self._init_sockets(interface_types,
+                                           interface_module,
+                                           warn_import)
+                
         return
         
     def _init_sockets(self, interface_types,
                             interface_module,
-                            sort_weighted=True,
                             warn_import=False):
         
         """Create a socket classes to locate and communicate with the chosen
@@ -44,7 +40,6 @@ class Sequencer(object):
         """
         
         sockets = {}
-        socket_names = {}
         
         for cls_name in interface_types:
         
@@ -52,7 +47,24 @@ class Sequencer(object):
             socket_obj.discover_interfaces(interface_module,
                                            cls_name,
                                            warn_import)
-            names_map = socket_obj.get_interface_names(sort_weighted=True)
+
+            sockets[cls_name] = socket_obj
+        
+        return sockets
+    
+    @property
+    def _names(self):
+        
+        """Create a socket classes to locate and communicate with the chosen
+        interface class. Store name mappings.
+        """
+        
+        socket_names = {}
+        
+        for cls_name, socket_obj in self._sockets.iteritems():
+        
+            names_map = socket_obj.get_interface_names(
+                                            sort_weighted=self._sort_weighted)
             
             dupes = names_map.values()
             for x in set(names_map.values()): dupes.remove(x)
@@ -64,10 +76,9 @@ class Sequencer(object):
                           "{}").format(dupes_str)
                 raise ValueError(errStr)
 
-            sockets[cls_name] = socket_obj
             socket_names[cls_name] = names_map
         
-        return sockets, socket_names
+        return socket_names
         
     def get_socket(self, interface_type):
         
