@@ -11,7 +11,6 @@ from aneris.entity import Simulation
 from aneris.entity.data import DataCatalog, DataPool
 from aneris.control.pipeline import Sequencer
 from aneris.control.simulation import Loader, Controller
-from aneris.control.sockets import NamedSocket
 from aneris.control.data import DataStorage, DataValidation
 
 import data_plugins
@@ -49,16 +48,6 @@ def catalog():
                                                     data_plugins)
     
     return catalog
-
-
-@pytest.fixture(scope="module")
-def interface():
-
-    interfacer = NamedSocket("DemoInterface")
-    interfacer.discover_interfaces(interfaces)
-    interface = interfacer.get_interface_object("TableInterface")
-    
-    return interface
 
 
 def test_init_loader(loader):
@@ -114,33 +103,7 @@ def test_can_load_false(loader, interface):
                              interface)
     
     assert not result
-    
-    
-def test_can_load_true(loader, controller, catalog, interface):
-    
-    pool = DataPool()
-    new_sim = Simulation("Hello World!")
 
-    test_inputs = {'demo:demo:low': 1,
-                   'demo:demo:high': 2,
-                   'demo:demo:rows': 5}
-                                               
-    data_indentities = test_inputs.keys()
-    data_values = test_inputs.values()
-    
-    controller.add_datastate(pool,
-                             new_sim,
-                             "input",
-                             catalog,
-                             data_indentities,
-                             data_values)
-    
-    result = loader.can_load(pool,
-                             new_sim,
-                             interface)
-    
-    assert result
-    
     
 def test_create_merged_state_none(loader):
     
