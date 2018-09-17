@@ -91,20 +91,8 @@ def test_get_data_value(loader, controller, catalog):
                                            "Technology:Common:DeviceType")
 
     assert new_data_value == "Tidal"
-    
-    
-def test_can_load_false(loader, interface):
-    
-    pool = DataPool()
-    new_sim = Simulation("Hello World!")
-    
-    result = loader.can_load(pool,
-                             new_sim,
-                             interface)
-    
-    assert not result
 
-    
+
 def test_create_merged_state_none(loader):
     
     new_sim = Simulation("Hello World!")
