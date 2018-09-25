@@ -20,6 +20,7 @@ from polite.paths import user_data_dir, module_dir
 import data_plugins as data
 import user_plugins as user_data
 
+
 def test_discover_plugins():
 
     super_cls='DataDefinition'
@@ -240,6 +241,60 @@ def test_serialise_data(tmpdir):
 
     assert os.path.isfile(data_path)
     
+def test_serialise_data_warns(tmpdir, monkeypatch):
+    
+    def mockerror(a, b):
+        raise Exception
+        
+    monkeypatch.setattr("aneris.boundary.data.Structure.save_value", mockerror)
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    pool = DataPool()
+    state = DataState("test")
+    data_store.discover_structures(data)
+    
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    data_store.create_new_data(pool, state, catalog, "Tidal", metadata)
+    
+    data_index = state.get_index("Technology:Common:DeviceType")
+
+    data_store.serialise_data(pool,
+                              [data_index],
+                              str(tmpdir))
+                                     
+    still_data = pool.get(data_index)
+
+    assert isinstance(still_data, Data)
+    
+def test_serialise_data_exception(tmpdir, monkeypatch):
+    
+    def mockerror(a, b):
+        raise Exception
+        
+    monkeypatch.setattr("aneris.boundary.data.Structure.save_value", mockerror)
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    pool = DataPool()
+    state = DataState("test")
+    data_store.discover_structures(data)
+    
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    data_store.create_new_data(pool, state, catalog, "Tidal", metadata)
+    
+    data_index = state.get_index("Technology:Common:DeviceType")
+
+    with pytest.raises(Exception):
+        data_store.serialise_data(pool,
+                                  [data_index],
+                                  str(tmpdir),
+                                  warn_save=False)
+
 def test_deserialise_data(tmpdir):
 
     catalog = DataCatalog()

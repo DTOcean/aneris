@@ -69,3 +69,10 @@ def test_refresh(sequencer):
     after_id = hex(id(after_object))
     
     assert before_id != after_id
+    
+def test_get_next_scheduled_none(sequencer):
+    
+    hub = sequencer.create_new_hub("DummyInterface")
+    next_interface = hub.get_next_scheduled()
+    
+    assert next_interface is None

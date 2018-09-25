@@ -379,13 +379,15 @@ class DataStorage(Plugin):
     def serialise_data(self, data_pool,
                              data_indexes,
                              data_dir="data",
-                             root_dir=None):
+                             root_dir=None,
+                             warn_save=True):
 
         for data_index in data_indexes:
             self._convert_data_to_box(data_pool,
                                       data_index,
                                       data_dir,
-                                      root_dir)
+                                      root_dir,
+                                      warn_save)
 
         return
         
@@ -408,12 +410,14 @@ class DataStorage(Plugin):
         
     def serialise_pool(self, data_pool,
                              data_dir="data",
-                             root_dir=None):
+                             root_dir=None,
+                             warn_save=True):
                                                                   
         self.serialise_data(data_pool,
                             data_pool,
                             data_dir,
-                            root_dir)
+                            root_dir,
+                            warn_save)
 
         return
         

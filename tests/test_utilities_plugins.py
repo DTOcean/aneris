@@ -7,12 +7,15 @@
 import os
 import sys
 
-from polite.paths import module_path
+import pytest
 
+from polite.paths import module_path
 from aneris.utilities.plugins import (get_module_names_from_package,
                                       get_module_names_from_paths,
                                       get_class_descriptions_from_module,
-                                      get_subclass_names_from_module)
+                                      get_subclass_names_from_module,
+                                      get_class_attr)
+
 
 def test_get_module_names_from_package():
 
@@ -56,3 +59,24 @@ def test_get_subclass_names_from_module():
                                                    'Structure')
 
     assert 'UnitData' in data_sub_mods
+
+def test_get_class_attr_warn(monkeypatch):
+    
+    def mockerror(path):
+        raise ImportError
+
+    monkeypatch.setattr("importlib.import_module", mockerror)
+    
+    result = get_class_attr("test", "notamodule", True)
+    
+    assert result is None
+    
+def test_get_class_attr_exception(monkeypatch):
+    
+    def mockerror(path):
+        raise ImportError
+
+    monkeypatch.setattr("importlib.import_module", mockerror)
+    
+    with pytest.raises(Exception):
+        get_class_attr("test", "notamodule")
