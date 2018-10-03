@@ -12,7 +12,7 @@ class Hub(object):
     
     """A Hub groups a particular class of interfaces and calculates the
     data requirements of each interface considering all the input and outputs
-    of the others. There is no defined order of execution in a hub.
+    of the others.
     
     Args:
       interface_name (str): The name of the interface class to control with the
@@ -463,6 +463,3 @@ class Pipeline(Hub):
             raise ValueError(errStr)
             
         return
-
-
-
