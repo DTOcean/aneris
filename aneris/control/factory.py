@@ -2,7 +2,7 @@
 """
 Created on Mon Jul 20 15:44:28 2015
 
-@author: 108630
+@author: Mathew Topper
 """
 
 from ..utilities.identity import get_unique_id

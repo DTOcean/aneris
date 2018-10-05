@@ -2,7 +2,7 @@
 """
 Created on Tue Mar 31 10:53:17 2015
 
-@author: 108630
+@author: Mathew Topper
 """
 
 from copy import deepcopy

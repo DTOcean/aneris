@@ -2,7 +2,7 @@
 """
 Created on Thu Dec 18 16:44:44 2014
 
-@author: 108630
+@author: Mathew Topper
 """
 
 from aneris.boundary.interface import RawInterface

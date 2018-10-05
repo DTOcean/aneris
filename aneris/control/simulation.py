@@ -4,7 +4,7 @@ Control classes related to the simulation entity.
 
 Created on Wed Jan 21 12:59:34 2015
 
-@author: 108630
+@author: Mathew Topper
 """
 
 import sys

@@ -2,7 +2,7 @@
 """
 Created on Wed Jan 21 17:28:04 2015
 
-@author: 108630
+@author: Mathew Topper
 """
 
 from aneris.utilities.identity import id_generator, get_unique_id
