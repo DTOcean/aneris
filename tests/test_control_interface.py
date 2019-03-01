@@ -9,8 +9,10 @@ import pytest
 
 from aneris.control.sockets import NamedSocket
 
-import interface_plugins as interfaces
-from interface_plugins.sptfile import SPTInterface
+import aneris.test.interfaces as interfaces
+import interface_plugins
+
+from aneris.test.interfaces.sptfile import SPTInterface
 
 def test_get_modules_from_package():
     
@@ -73,7 +75,6 @@ def test_get_data():
 
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -101,7 +102,7 @@ def test_raw_interface():
     test_value = [4.]*10
     
     interfacer = NamedSocket("RawInterface")
-    interfacer.discover_interfaces(interfaces)
+    interfacer.discover_interfaces(interface_plugins)
     providers = interfacer.get_providing_interfaces(test_variable)
     raw_interface = interfacer.get_interface_object(test_interface)
     
@@ -124,7 +125,7 @@ def test_wrong_interface():
     test_value = [4.]*10
     
     interfacer = NamedSocket("RawInterface")
-    interfacer.discover_interfaces(interfaces)
+    interfacer.discover_interfaces(interface_plugins)
     raw_interface = interfacer.get_interface_object(test_interface)
         
     # Try to get the wrong data

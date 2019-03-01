@@ -10,7 +10,7 @@ import pytest
 from aneris.boundary.interface import FileInterface
 from aneris.control.sockets import NamedSocket
 
-import interface_plugins as interfaces
+import aneris.test.interfaces as interfaces
 
 
 def test_FileInterface():

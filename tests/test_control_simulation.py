@@ -20,9 +20,9 @@ from aneris.entity import Simulation
 from aneris.entity.data import Data, DataCatalog, DataPool, DataState
 from aneris.utilities.data import check_integrity
 
+import aneris.test.interfaces as interfaces
 import data_plugins
-import interface_plugins as interfaces
-    
+
 @pytest.fixture(scope="module")
 def controller():
     
@@ -54,7 +54,6 @@ def test_add_datastate(controller):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -102,7 +101,6 @@ def test_add_datastate_obj(controller):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -172,7 +170,6 @@ def test_copy_simulation(controller):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -229,7 +226,6 @@ def test_convert_state_to_box(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -279,7 +275,6 @@ def test_convert_box_to_state(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -332,7 +327,6 @@ def test_serialise_states(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -380,7 +374,6 @@ def test_deserialise_states(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -434,7 +427,6 @@ def test_save_simulation(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -481,7 +473,6 @@ def test_load_simulation(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -539,7 +530,6 @@ def test_convert_state_to_box_root(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -590,7 +580,6 @@ def test_convert_box_to_state_root(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -645,7 +634,6 @@ def test_serialise_states_root(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -693,7 +681,6 @@ def test_deserialise_states_root(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
@@ -747,7 +734,6 @@ def test_load_simulation_root(controller, tmpdir):
     test_variable = 'site:wave:dir'
     this_dir = os.path.dirname(__file__)
     test_path = os.path.join(this_dir,
-                             '..',
                              'data',
                              'test_spectrum_30min.spt'
                              )
