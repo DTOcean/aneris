@@ -3,10 +3,8 @@
 TBC
 """
 
-import abc
-
 from copy import deepcopy
-from collections import OrderedDict
+from collections import OrderedDict, Sequence
 
 from ..utilities.identity import get_unique_id
 
@@ -155,7 +153,13 @@ class DataCatalog(object):
 
             meta_value = getattr(meta, meta_attr)
             
-            if meta_value == value:
+            if meta_value is None: continue
+            
+            is_list = lambda x: (isinstance(x, Sequence) and
+                                 not isinstance(x, basestring))
+            
+            if ((is_list(meta_value) and value in meta_value) or
+                meta_value == value):
                 
                 return_dict[var_id] = meta
                 
