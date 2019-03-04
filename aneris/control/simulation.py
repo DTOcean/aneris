@@ -111,23 +111,23 @@ class Loader(object):
                              interface,
                              skip_vars=None):
                                  
-        input_declaration, optional_inputs = interface.get_inputs()                        
-            
+        input_declaration, optional_inputs = interface.get_inputs()
+        
         active_inputs = self._get_active_inputs(pool,
                                                 simulation,
                                                 input_declaration)
-                                                              
+        
         if skip_vars is not None:
             remaining_inputs = set(active_inputs) - set(skip_vars)
             active_inputs = list(remaining_inputs)
-                         
+        
         for putvar in active_inputs:
             
             if self.has_data(simulation, putvar):
                 data_value = self.get_data_value(pool, simulation, putvar)
             else:
                 data_value = None
-
+            
             # Allow None values from optional inputs
             if data_value is None and putvar not in optional_inputs:
                 
@@ -135,10 +135,105 @@ class Loader(object):
                           "not satisfied.").format(putvar,
                                                    interface.get_name())
                 raise ValueError(errStr)
-
+            
             interface.put_data(putvar, data_value)
             
         return interface
+    
+    def add_datastate(self, pool,
+                            simulation,
+                            level=None,
+                            data_catalog=None,
+                            identifiers=None,
+                            values=None,
+                            no_merge=False,
+                            use_objects=False,
+                            log_exceptions=False):
+        
+        # We always create a new datastate
+        new_state = self._store.create_new_datastate(level)
+        
+        if identifiers is None:
+            data_list = ()
+        else:            
+            data_list = zip(identifiers, values)
+            
+        if data_list and data_catalog is None:
+            
+            errStr = "A DataCatelog must be provided to add data"
+            raise ValueError(errStr)
+        
+        for ident, data in data_list:
+
+            # Test that the variable is in the data catalog
+            if not self._store.is_valid(data_catalog, ident):
+    
+                errStr = ('Variable ID "{}" is not contained in the data '
+                          'catalog.').format(ident)
+    
+                raise ValueError(errStr)
+    
+            # Get the meta data from the catalog
+            metadata = data_catalog.get_metadata(ident)
+            
+            # Data is always stored using a datastate and the built-in
+            # data pool. If the use_objects flag is True then Data object
+            # creation is the responcibility of the caller
+            if use_objects:
+                
+                self._store.add_data_to_state(pool,
+                                              new_state,
+                                              ident,
+                                              data)
+                
+            elif log_exceptions:
+                
+                try:
+                    
+                    self._store.create_new_data(pool,
+                                                new_state,
+                                                data_catalog,
+                                                data,
+                                                metadata)
+                    
+                except:
+                    
+                    e = sys.exc_info()[0]
+                    msg = ("Reading variable {} generated error: "
+                           "{}").format(ident, e)
+                    logging.exception(msg)
+                    
+                    continue
+                
+            else:
+    
+                self._store.create_new_data(pool,
+                                            new_state,
+                                            data_catalog,
+                                            data,
+                                            metadata)
+
+        # Add it to the simulation.
+        removed_states = simulation.add_state(new_state)
+                        
+        for kill_state in removed_states:
+            
+            self._store.remove_state(pool, kill_state)
+            
+        if level is None:
+            log_msg = 'Datastate stored'
+        else:
+            log_msg = 'Datastate with level "{}" stored'.format(level)
+            
+        module_logger.info(log_msg)
+                
+        if no_merge: return
+            
+        # Update the merged state stored in the simulation
+        merged_state = self._merge_active_states(simulation)
+        simulation.set_merged_state(merged_state)
+            
+        return
     
     def create_merged_state(self, simulation, use_existing=True):
         
@@ -608,102 +703,7 @@ class Controller(Loader):
         interface_obj = hub.get_interface_obj(interface_cls_name)
         
         return interface_obj
-                                               
-    def add_datastate(self, pool,
-                            simulation,
-                            level=None,
-                            data_catalog=None,
-                            identifiers=None,
-                            values=None,
-                            no_merge=False,
-                            use_objects=False,
-                            log_exceptions=False):
-        
-        # We always create a new datastate
-        new_state = self._store.create_new_datastate(level)
-        
-        if identifiers is None:
-            data_list = ()
-        else:            
-            data_list = zip(identifiers, values)
-            
-        if data_list and data_catalog is None:
-            
-            errStr = "A DataCatelog must be provided to add data"
-            raise ValueError(errStr)
-        
-        for ident, data in data_list:
-
-            # Test that the variable is in the data catalog
-            if not self._store.is_valid(data_catalog, ident):
     
-                errStr = ('Variable ID "{}" is not contained in the data '
-                          'catalog.').format(ident)
-    
-                raise ValueError(errStr)
-    
-            # Get the meta data from the catalog
-            metadata = data_catalog.get_metadata(ident)
-            
-            # Data is always stored using a datastate and the built-in
-            # data pool. If the use_objects flag is True then Data object
-            # creation is the responcibility of the caller
-            if use_objects:
-                
-                self._store.add_data_to_state(pool,
-                                              new_state,
-                                              ident,
-                                              data)
-                
-            elif log_exceptions:
-                
-                try:
-                    
-                    self._store.create_new_data(pool,
-                                                new_state,
-                                                data_catalog,
-                                                data,
-                                                metadata)
-                    
-                except:
-                    
-                    e = sys.exc_info()[0]
-                    msg = ("Reading variable {} generated error: "
-                           "{}").format(ident, e)
-                    logging.exception(msg)
-                    
-                    continue
-                
-            else:
-    
-                self._store.create_new_data(pool,
-                                            new_state,
-                                            data_catalog,
-                                            data,
-                                            metadata)
-
-        # Add it to the simulation.
-        removed_states = simulation.add_state(new_state)
-                        
-        for kill_state in removed_states:
-            
-            self._store.remove_state(pool, kill_state)
-            
-        if level is None:
-            log_msg = 'Datastate stored'
-        else:
-            log_msg = 'Datastate with level "{}" stored'.format(level)
-            
-        module_logger.info(log_msg)
-                
-        if no_merge: return
-            
-        # Update the merged state stored in the simulation
-        merged_state = self._merge_active_states(simulation)
-        simulation.set_merged_state(merged_state)
-            
-        return
-                
     def mask_states(self, simulation,
                           search_str=None,
                           mask_after=None,
