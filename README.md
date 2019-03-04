@@ -1,17 +1,21 @@
-[![appveyor](https://ci.appveyor.com/api/projects/status/github/DTOcean/polite?branch=master&svg=true)](https://ci.appveyor.com/project/DTOcean/polite)
-[![codecov](https://codecov.io/gh/DTOcean/polite/branch/master/graph/badge.svg)](https://codecov.io/gh/DTOcean/polite)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bb34506cc82f4df883178a6e64619eaf)](https://www.codacy.com/project/H0R5E/polite/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DTOcean/polite&amp;utm_campaign=Badge_Grade_Dashboard&amp;branchId=8410911)
-[![release](https://img.shields.io/github/release/DTOcean/polite.svg)](https://github.com/DTOcean/polite/releases/latest)
+[![appveyor](https://ci.appveyor.com/api/projects/status/github/DTOcean/aneris?branch=master&svg=true)](https://ci.appveyor.com/project/DTOcean/aneris)
+[![codecov](https://codecov.io/gh/DTOcean/aneris/branch/master/graph/badge.svg)](https://codecov.io/gh/DTOcean/aneris)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bb34506cc82f4df883178a6e64619eaf)](https://www.codacy.com/project/H0R5E/aneris/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DTOcean/aneris&amp;utm_campaign=Badge_Grade_Dashboard&amp;branchId=8410911)
+[![release](https://img.shields.io/github/release/DTOcean/aneris.svg)](https://github.com/DTOcean/aneris/releases/latest)
 
-# polite
+# aneris
 
-Easy functions for paths, logging and configuration files.
+Aneris provides data management, coupling between arbitrary sources (such as
+files, databases, python packages, etc.) and execution ordering.
+
+It is the framework on which [dtocean-core](
+https://github.com/DTOcean/dtocean-core) is built.
 
 * For python 2.7 only.
 
 ## Installation
 
-Installation and development of polite uses the [Anaconda Distribution](
+Installation and development of aneris uses the [Anaconda Distribution](
 https://www.anaconda.com/distribution/) (Python 2.7)
 
 ### Conda Package
@@ -19,7 +23,7 @@ https://www.anaconda.com/distribution/) (Python 2.7)
 To install:
 
 ```
-$ conda install -c dataonlygreater polite
+$ conda install -c dataonlygreater aneris
 ```
 
 ### Source Code
@@ -34,7 +38,7 @@ conda env create -f environment.yml
 Now activate the environment and use pip to install the source code:
 
 ```
-$ conda activate _polite
+$ conda activate _aneris
 $ pip install -e .
 ```
 
@@ -62,7 +66,7 @@ If not already active, activate the conda environment set up in the [Source
 Code](#source-code) section:
 
 ```
-$ conda activate _polite
+$ conda activate _aneris
 ```
 
 Install pytest to the environment (one time only):
@@ -82,49 +86,127 @@ $ py.test tests
 To uninstall the conda package:
 
 ```
-$ conda remove polite
+$ conda remove aneris
 ```
 
 To uninstall the source code and its conda environment:
 
 ```
-$ conda remove --name _polite --all
+$ conda remove --name _aneris --all
 ```
 
 ## Usage
 
-An example of setting up [logging](
-https://docs.python.org/2/library/logging.html) using a user-specific [yaml 
-configuration file]( https://docs.python.org/2/howto/
-logging.html#configuring-logging).
+An example of using aneris to read data from a DataWell SPT file interface,
+store the data using Simulation and DataPool objects, and then retrieve the
+data using its specified data structure.
 
-Copy the default logging file from the module source code to the user's data
-directory (`C:\Users\<USERNAME>\AppData\Roaming\DTOcean\polite`):
+All the setup for this example is in the aneris.test module of the source code.
+The example SPT file can be found in the `aneris\\tests\\data` directory.
+
+First, look for interfaces that are subclasses of FileInterface in the
+aneris.test.interfaces module:
 
 ```python
->>> from polite.paths import (DirectoryMap,
-                              ObjDirectory,
-                              UserDataDirectory)
+>>> from aneris.control.sockets import NamedSocket
+>>> import aneris.test.interfaces as interfaces
 
->>> objdir = ObjDirectory("polite", "config")
->>> datadir = UserDataDirectory("polite", "DTOcean")
->>> dirmap = DirectoryMap(datadir, objdir)
->>> dirmap.copy_file("logging.yaml", overwrite=True)
->>> datadir.isfile("logging.yaml")
-True
+>>> interfacer = NamedSocket("FileInterface")
+>>> interfacer.discover_interfaces(interfaces)
+>>> interfacer.get_interface_names()
+{'Datawell SPT File': 'SPTInterface'}
 ```
 
-Use the copied configuration file to set up logging:
+Load the SPTInterface interface and see what file types it can load:
 
 ```python
->>> from polite.configuration import Logger
+>>> file_interface = interfacer.get_interface_object('SPTInterface')
+>>> file_interface.get_valid_extensions()
+['.spt']
+```
 
->>> log = Logger(datadir)
->>> log_config_dict = log.read()
->>> log.configure_logger(log_config_dict)
->>> logger = log.add_named_logger("polite")
->>> logger.info("Hello World")
-INFO - polite - Hello World
+See which variables the interface can provide:
+
+```python
+>>> output_variables = file_interface.get_outputs()
+>>> output_variables
+['site:wave:dir',
+ 'site:wave:spread',
+ 'site:wave:skewness',
+ 'site:wave:kurtosis',
+ 'site:wave:freqs',
+ 'site:wave:PSD1D',
+ 'site:wave:Hm0',
+ 'site:wave:Tz']
+```
+
+Get the data from the test SPT file:
+
+```python
+>>> file_interface.set_file_path(test_spectrum_30min.spt)
+>>> file_interface.connect()
+```
+
+Create a data catalogue and read the defined structures and meta data for each
+variable:
+
+```python
+>>> from aneris.control.data import DataValidation
+>>> from aneris.entity.data import DataCatalog
+
+>>> catalog = DataCatalog()
+>>> validation = DataValidation(meta_cls=data.MyMetaData)
+>>> validation.update_data_catalog_from_definitions(catalog,
+                                                    data)
+```
+
+Check which variables in the interface are defined in the data catalogue:
+
+```python
+>>> valid_variables = validation.get_valid_variables(catalog, output_variables)
+>>> valid_variables
+['site:wave:dir', 'site:wave:PSD1D', 'site:wave:freqs']
+```
+
+Collect the raw data for the valid variables:
+
+```python
+>>> raw_data = []
+
+>>> for variable in valid_variables:
+>>>     raw_data.append(file_interface.get_data(variable))
+```
+
+Create DataPool, Simulation and Loader objects and store the collected data:
+
+```python
+>>> from aneris.control.data import DataStorage
+>>> from aneris.control.simulation import Loader
+>>> from aneris.entity import Simulation
+>>> from aneris.entity.data import DataPool
+
+>>> pool = DataPool()
+>>> simulation = Simulation("Hello World!")
+>>> data_store = DataStorage(data)
+>>> loader = Loader(data_store)
+
+>>> loader.add_datastate(pool,
+>>>                      simulation,
+>>>                      None,
+>>>                      catalog,
+>>>                      valid_variables,
+>>>                      raw_data)
+```
+
+Retrieved variables are now pandas Series objects, as defined in the data
+catalogue:
+
+```python
+>>> freqs = loader.get_data_value(pool,
+>>>                               simulation,
+>>>                               'site:wave:freqs')
+>>> type(freqs)
+pandas.core.series.Series
 ```
 
 ## Contributing
@@ -132,9 +214,9 @@ INFO - polite - Hello World
 Pull requests are welcome. For major changes, please open an issue first to
 discuss what you would like to change.
 
-See [this blog post](https://www.dataonlygreater.com/latest/professional/2017/
-03/09/dtocean-development-change-management/) for information regarding
-development of the DTOcean ecosystem.
+See [this blog post](
+https://www.dataonlygreater.com/latest/professional/2017/03/09/dtocean-development-change-management/)
+for information regarding development of the DTOcean ecosystem.
 
 Please make sure to update tests as appropriate.
 

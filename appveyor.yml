@@ -15,7 +15,7 @@ only_commits:
     - setup.py
 
 # version format
-version: 0.10.dev2.build{build}
+version: 0.10.0.build{build}
 
 environment:
   matrix:
@@ -27,7 +27,6 @@ environment:
       MINICONDA: C:\Miniconda-x64
       ARCH: "64"
 
-
 init:
   - "ECHO %PYTHON_VERSION% %MINICONDA%"
 
@@ -35,12 +34,11 @@ install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
   - conda update --quiet conda
-  - conda config --append channels conda-forge
-  - conda config --append channels dataonlygreater
   - conda info --all
-  - "conda create --quiet --name conda-env-%PYTHON_VERSION%-%ARCH% python=%PYTHON_VERSION% --file requirements-conda.txt"
-  - activate conda-env-%PYTHON_VERSION%-%ARCH%
-  - python setup.py develop
+  - conda env create -f environment.yml
+  - activate _aneris
+  - conda install -y pytest pytest-cov pytest-mock
+  - pip install -e .
   
 build: off
   

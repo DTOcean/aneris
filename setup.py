@@ -73,20 +73,19 @@ class CleanPyc(Command):
                 yield os.path.join(root, fname)
  
 setup(name='aneris',
-      version='0.10.dev2',
-      description='aneris.py: multi-client data coupling agent',
+      version='0.10.0',
+      description='aneris.py: data management, coupling and execution',
       author='Mathew Toppper',
       author_email='mathew.topper@tecnalia.com',
       license = "MIT",
       packages=find_packages(),
-      install_requires=[
-                        'attrdict',
+      install_requires=['attrdict',
                         'numpy',
                         'openpyxl',
                         'pandas>=0.20',
                         'polite>=0.9',
-                        'pyyaml',
                         'pywin32',
+                        'pyyaml',
                         'sqlalchemy',
                         'xlrd',
                         'xlwt'

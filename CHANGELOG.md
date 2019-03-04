@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [0.10.0] - 2019-03-04
 
 ### Added
 
@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   the warn_import flag is set in Socket.discover_interfaces or Sequencer.
 - Added conda requirements file for developers that doesn't include any DTOcean
   packages (requirements-conda-dev.txt).
+- Added test module, which contains SPT interface example, which as been added
+  to the README.
   
 ### Changed
 
@@ -41,6 +43,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Modify add_datastate in the Controller class so that it can take Data objects
   as the variable values, if the use_objects flag is set to True.
 - Updated API for pandas.read_excel
+- Moved the add_datastate method from the Controller to the Loader class.
   
 ### Fixed
   
