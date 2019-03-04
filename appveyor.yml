@@ -35,10 +35,13 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update --quiet conda
   - conda info --all
-  - conda env create -f environment.yml
+  - conda create -y -n _aneris python=2.7 pip
   - activate _aneris
-  - conda install -y polite pytest pytest-cov pytest-mock
+  - copy .condarc %CONDA_PREFIX%
+  - conda install -y polite=0.10.0
+  - conda install --file requirements-conda-dev.txt
   - pip install -e .
+  - conda install -y pytest pytest-cov pytest-mock
   
 build: off
   

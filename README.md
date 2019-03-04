@@ -32,17 +32,19 @@ Conda can be used to install dependencies into a dedicated environment from
 the source code root directory:
 
 ```
-conda env create -f environment.yml
+conda create -n _aneris python=2.7 pip
 ```
 
-Activate the conda environment:
+Activate the environment, then copy the `.condrc` file to store installation  
+channels:
 
 ```
 $ conda activate _aneris
+$ copy .condarc %CONDA_PREFIX%
 ```
 
-Install the source code of [polite](https://github.com/DTOcean/polite) using the
-`requirements-conda-dev.tex` file and pip:
+Install [polite](https://github.com/DTOcean/polite) into the environment. For 
+example, if installing them from source:
 
 ```
 $ cd \\path\\to\\polite
@@ -54,6 +56,7 @@ Finally, install aneris using pip:
 
 ```
 $ cd \\path\\to\\aneris
+$ conda install --file requirements-conda-dev.txt
 $ pip install -e .
 ```
 
