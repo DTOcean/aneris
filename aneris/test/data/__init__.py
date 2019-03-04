@@ -14,7 +14,7 @@ class MyMetaData(MetaData):
         self._name = None
         self._units = None
         self._types = None
-
+        
         super(MyMetaData, self).__init__(props_dict)
 
         return

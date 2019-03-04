@@ -28,7 +28,7 @@ def test_discover_plugins():
     validation = DataValidation()
 
     # Discover the available classes and load the instances
-    cls_map = validation._discover_plugins(data, super_cls)
+    cls_map = validation._discover_plugins(user_data, super_cls)
 
     assert 'testDefinition' in cls_map.keys()
 

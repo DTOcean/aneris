@@ -1,33 +1,10 @@
 
 import __builtin__
-
 from copy import deepcopy
-
-from aneris.boundary import DataDefinition, Structure
 
 import pandas as pd
 
-class testDefinition(DataDefinition):
-
-    @property
-    def package_name(self):
-
-        return "aneris"
-
-    @property
-    def company_name(self):
-
-        return "DTOcean"
-
-    @property
-    def local_yaml_dir(self):
-        '''The paths of the yaml definition files.'''
-        return 'yaml'
-
-    @property
-    def  user_yaml_dir(self):
-        '''The paths of the yaml definition files.'''
-        return None
+from aneris.boundary import Structure
 
 
 class UnitData(Structure):
@@ -104,20 +81,6 @@ class SimpleList(Structure):
     def get_value(self, data):
 
         return data[:]
-
-class SeriesData(Structure):
-
-    '''Structure represented in a series of some sort'''
-
-    def get_data(self, raw, meta_data):
-
-        series = pd.Series(raw)
-
-        return series
-
-    def get_value(self, data):
-
-        return data.copy()
 
 
 class TableData(Structure):

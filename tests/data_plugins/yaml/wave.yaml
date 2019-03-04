@@ -1,6 +1,0 @@
----
-- identifier: 'site:wave:dir'
-  name: 'Direction'
-  units: 'Degrees'
-  structure: 'SeriesData'
-

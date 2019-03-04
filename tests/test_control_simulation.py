@@ -21,15 +21,16 @@ from aneris.entity.data import Data, DataCatalog, DataPool, DataState
 from aneris.utilities.data import check_integrity
 
 import aneris.test.interfaces as interfaces
-import data_plugins
+import aneris.test.data as data_plugins
+
 
 @pytest.fixture(scope="module")
 def controller():
     
     data_store = DataStorage(data_plugins)
-    sequencer = Sequencer(["DummyInterface"],
+    sequencer = Sequencer(["SPTInterface"],
                           interfaces)
-    control = Controller(data_store, sequencer)  
+    control = Controller(data_store, sequencer)
     
     return control
 
