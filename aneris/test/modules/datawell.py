@@ -5,13 +5,8 @@ Created on Tue Nov 25 17:54:30 2014
 @author: Mathew Topper
 """
 
-#import pprint
-#import matplotlib.pylab as plt
-
-import numpy as np
 import pandas as pd
 
-from .distribution import gaussiandistribution
 
 class SPT(object):
     
@@ -133,56 +128,3 @@ class SPT(object):
         
         # Copy Tz
         self.normalised['Tz'] = self.raw['Tz']
-
-            
-    def add_distribution(self, intervalDegrees):
-
-        intervalRadians = np.radians(intervalDegrees)
-        bearingsRadians = np.radians(self.normalised['bearingsDegrees'])
-        spreadingRadians = np.radians(self.normalised['spreadingDegrees'])
-        PSD = self.normalised['PSD1D']
-
-        spreadBearingsRadians, spreadPSD = \
-                        gaussiandistribution( intervalRadians,
-                                              PSD,
-                                              bearingsRadians,
-                                              spreadingRadians )
-                                              
-         # Get the frequency spread too
-        spreadFrequency, _ = np.meshgrid( self.normalised['frequencies'],
-                                          spreadPSD[:,1] )
-                                    
-                                    
-        # Load up the results
-        self.normalised['distributedFrequency']       = spreadFrequency
-        self.normalised['distributedPSD']             = spreadPSD
-        self.normalised['distributedBearingsRadians'] = spreadBearingsRadians
-        self.normalised['distributedBearingsDegrees'] = \
-                                        np.degrees(spreadBearingsRadians)
-   
-#if __name__ == '__main__':
-#    
-#    test = SPT()
-#    test.read('test_spectrum_30min.spt')
-#    
-#    df = test.raw['data']
-#    pprint.pprint(df.ix[df['Normalized PSD'].idxmax()])
-#    
-#    test.make_normalised()
-#    
-#    PSD1D = test.normalised['PSD1D']
-#    freqs = test.normalised['frequencies']
-#    
-#    plt.plot(freqs, PSD1D)
-#    plt.show()
-    
-#    test.add_distribution(10)
-#    spreadFrequency = test.normalised['distributedFrequency']
-#    spreadBearingsDegrees = test.normalised['distributedBearingsDegrees']
-#    spreadPSD = test.normalised['distributedPSD']
-#                    
-#    z_min, z_max = -np.abs(spreadPSD).max(), np.abs(spreadPSD).max()
-#    
-#    plt.pcolor(spreadFrequency, spreadBearingsDegrees, spreadPSD,
-#               cmap='RdBu', vmin=z_min, vmax=z_max)
-#    plt.show()
