@@ -37,7 +37,7 @@ install:
   - conda info --all
   - conda env create -f environment.yml
   - activate _aneris
-  - conda install -y pytest pytest-cov pytest-mock
+  - conda install -y polite pytest pytest-cov pytest-mock
   - pip install -e .
   
 build: off

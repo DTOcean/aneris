@@ -10,7 +10,6 @@ dependencies:
   - numpy
   - openpyxl
   - pandas >=0.20
-  - polite >=0.9
   - pywin32
   - pyyaml
   - sqlalchemy

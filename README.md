@@ -35,10 +35,25 @@ the source code root directory:
 conda env create -f environment.yml
 ```
 
-Now activate the environment and use pip to install the source code:
+Activate the conda environment:
 
 ```
 $ conda activate _aneris
+```
+
+Install the source code of [polite](https://github.com/DTOcean/polite) using the
+`requirements-conda-dev.tex` file and pip:
+
+```
+$ cd \\path\\to\\polite
+$ conda install --file requirements-conda-dev.txt
+$ pip install -e .
+```
+
+Finally, install aneris using pip:
+
+```
+$ cd \\path\\to\\aneris
 $ pip install -e .
 ```
 
