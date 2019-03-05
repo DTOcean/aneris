@@ -16,6 +16,7 @@ import sys
 import glob
 import pickle
 import datetime as dt
+from types import NoneType
 from numbers import Number
 
 import pandas as pd
@@ -160,11 +161,12 @@ class Structure(object):
         
         value = self.get_value(data)
         
-        # If data is immutable do not check for equivalence.        
+        # If data is immutable do not check for equivalence.
         if isinstance(data, (basestring,
                              tuple,
                              bool,
                              frozenset,
+                             NoneType,
                              Number,
                              dt.date,
                              dt.time,
