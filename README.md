@@ -44,7 +44,7 @@ $ copy .condarc %CONDA_PREFIX%
 ```
 
 Install [polite](https://github.com/DTOcean/polite) into the environment. For 
-example, if installing them from source:
+example, if installing it from source:
 
 ```
 $ cd \\path\\to\\polite
@@ -52,7 +52,7 @@ $ conda install --file requirements-conda-dev.txt
 $ pip install -e .
 ```
 
-Finally, install aneris using pip:
+Finally, install aneris and its dependencies using conda and pip:
 
 ```
 $ cd \\path\\to\\aneris
@@ -64,15 +64,6 @@ To deactivate the conda environment:
 
 ```
 $ conda deactivate
-```
-
-For installation into another environment (such as when developing
-multiple DTOcean packages), use the `requirements-conda-dev.tex` file for
-dependencies:
-
-```
-$ conda install --file requirements-conda-dev.txt
-$ pip install -e .
 ```
 
 ### Tests
@@ -209,11 +200,11 @@ Create DataPool, Simulation and Loader objects and store the collected data:
 >>> loader = Loader(data_store)
 
 >>> loader.add_datastate(pool,
->>>                      simulation,
->>>                      None,
->>>                      catalog,
->>>                      valid_variables,
->>>                      raw_data)
+...                      simulation,
+...                      None,
+...                      catalog,
+...                      valid_variables,
+...                      raw_data)
 ```
 
 Retrieved variables are now pandas Series objects, as defined in the data
@@ -221,8 +212,8 @@ catalogue:
 
 ```python
 >>> freqs = loader.get_data_value(pool,
->>>                               simulation,
->>>                               'site:wave:freqs')
+...                               simulation,
+...                               'site:wave:freqs')
 >>> type(freqs)
 pandas.core.series.Series
 ```
