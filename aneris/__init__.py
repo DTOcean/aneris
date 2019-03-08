@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-"""
+
+# Define build number for packaging test
+from ._build import BUILD
+__build__ = BUILD
+
 # Set default logging handler to avoid "No handler found" warnings.
 import logging
 try:  # Python 2.7+
