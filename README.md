@@ -23,7 +23,7 @@ https://www.anaconda.com/distribution/) (Python 2.7)
 To install:
 
 ```
-$ conda install -c dataonlygreater aneris
+$ conda install -c defaults -c conda-forge -c dataonlygreater aneris
 ```
 
 ### Source Code
