@@ -106,6 +106,8 @@ $ conda remove --name _aneris --all
 
 ## Usage
 
+### Example
+
 An example of using aneris to read data from a DataWell SPT file interface,
 store the data using Simulation and DataPool objects, and then retrieve the
 data using its specified data structure.
@@ -216,6 +218,22 @@ catalogue:
 ...                               'site:wave:freqs')
 >>> type(freqs)
 pandas.core.series.Series
+```
+
+### Command Line Tools
+
+A utility is provided to convert DTOcean data description specifications (DDS)
+files saved in MS Excel format to native yaml format. To get help:
+
+```
+$ bootstrap-dds -h
+```
+
+A seconds utility is provided to merge two DDS files in Excel format. This can
+be useful when merging files in a version-control system. To get help:
+
+```
+$ xl_merge -h
 ```
 
 ## Contributing
