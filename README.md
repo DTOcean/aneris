@@ -1,6 +1,6 @@
 [![appveyor](https://ci.appveyor.com/api/projects/status/github/DTOcean/aneris?branch=master&svg=true)](https://ci.appveyor.com/project/DTOcean/aneris)
 [![codecov](https://codecov.io/gh/DTOcean/aneris/branch/master/graph/badge.svg)](https://codecov.io/gh/DTOcean/aneris)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bb34506cc82f4df883178a6e64619eaf)](https://www.codacy.com/project/H0R5E/aneris/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DTOcean/aneris&amp;utm_campaign=Badge_Grade_Dashboard&amp;branchId=8410911)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc6bdc4f62ed4fd09298c9b58a09b1d1)](https://www.codacy.com//project/H0R5E/aneris/dashboard??utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DTOcean/aneris&amp;utm_campaign=Badge_Grade&amp;branchId=11661678)
 [![release](https://img.shields.io/github/release/DTOcean/aneris.svg)](https://github.com/DTOcean/aneris/releases/latest)
 
 # aneris
