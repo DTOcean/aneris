@@ -19,6 +19,11 @@ import pandas as pd
 from yaml import load, safe_dump
 from win32com.client import Dispatch
 
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
 
 def yaml_to_py(yaml_path):
     
@@ -27,7 +32,7 @@ def yaml_to_py(yaml_path):
     with open(yaml_path, 'r') as yaml_stream:
         
         try:
-            pyfmt = load(yaml_stream)
+            pyfmt = load(yaml_stream, Loader=Loader)
         except Exception as e:
             errStr = "File {} produced error:\n{}".format(yaml_path, e)
             raise Exception(errStr)
@@ -223,7 +228,8 @@ def xl_to_data_yaml(xl_path,
                                 default_flow_style=False,
                                 encoding='utf-8',
                                 allow_unicode=True,
-                                explicit_start=True))
+                                explicit_start=True,
+                                Dumper=Dumper))
                                      
     return
     
