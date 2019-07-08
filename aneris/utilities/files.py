@@ -20,9 +20,9 @@ from yaml import load, safe_dump
 from win32com.client import Dispatch
 
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Loader
 
 
 def yaml_to_py(yaml_path):
@@ -38,7 +38,8 @@ def yaml_to_py(yaml_path):
             raise Exception(errStr)
     
     return pyfmt
-    
+
+
 def xl_to_dds(xl_path,
               ignore_column=None,
               ignore_missing=True,
@@ -46,14 +47,14 @@ def xl_to_dds(xl_path,
     
     '''Read an XL file and produce a dds list of the form expected by
     the DataDefinition boundary class'''
-
+    
     sheets = pd.read_excel(xl_path, sheet_name=None, index_col=0)
     root_sheet = sheets.pop("ROOT", None)
     
     # Drop a column if ignore_column is given
     if ignore_column is not None and ignore_column in root_sheet.columns:
         root_sheet = root_sheet.drop(ignore_column, 1)
-
+    
     # Fix the columns if necessary
     if sanitise_keys:
         
@@ -68,13 +69,13 @@ def xl_to_dds(xl_path,
             sane_cols.append(sane_header)
             
         root_sheet.columns = sane_cols
-        
+    
     # Test for duplicate indexes
     root_indices = root_sheet.index.tolist()
     
     if len(root_indices) != len(set(root_indices)):
         _raise_dupes_error(xl_path, "root", root_indices)
-        
+    
     data = []
     
     for identifier, row in root_sheet.iterrows():
@@ -85,7 +86,7 @@ def xl_to_dds(xl_path,
         member_dict.update(row.to_dict())
         
         for key, df in sheets.iteritems():
-
+            
             # Drop a column if ignore_column is given
             if ignore_column is not None and ignore_column in df.columns:
                 df = df.drop(ignore_column, 1)
@@ -95,20 +96,20 @@ def xl_to_dds(xl_path,
                 
                 sane_key = key.lower()
                 sane_key = sane_key.replace(" ", "_")
-                
+            
             else:
                 
                 sane_key = key
-                
+            
             # Test for duplicate indexes
             sheet_indices = df.index.tolist()
             
             if len(sheet_indices) != len(set(sheet_indices)):
                 _raise_dupes_error(xl_path, key, sheet_indices)
-                
+            
             # Test for erroneous indexes
-            erroneous_indices = set(sheet_indices) - set(root_indices)                
-                
+            erroneous_indices = set(sheet_indices) - set(root_indices)
+            
             if erroneous_indices:
                 
                 safe_indices = [str(x) for x in erroneous_indices]
@@ -119,7 +120,7 @@ def xl_to_dds(xl_path,
                                                                 xl_path,
                                                                 erroneous_str)
                 raise KeyError(errStr)
-                
+            
             if identifier in df.index:
                 
                 keyseries = df.loc[identifier].dropna()
@@ -136,18 +137,19 @@ def xl_to_dds(xl_path,
                 try:
                     
                     member_dict[sane_key] = keyseries.tolist()
-
+                
                 except AttributeError, e:
                     
                     errStr = ("The following AttributeError occurred reading "
                               'file {}, sheet "{}", indentifier "{}":'
                               '\n{}').format(xl_path, key, identifier, e)
                     raise AttributeError(errStr)
-                
-        data.append(member_dict)
         
-    return data
+        data.append(member_dict)
     
+    return data
+
+
 def dds_merge(original_list, update_list, verbose=False):
     
     original_dict = {}
@@ -156,10 +158,10 @@ def dds_merge(original_list, update_list, verbose=False):
     
     for original in original_list:
         original_dict[original['identifier']] = deepcopy(original)
-        
+    
     for update in update_list:
         update_dict[update['identifier']] = deepcopy(update)
-        
+    
     for identifier, update in update_dict.iteritems():
         
         merged = {}
@@ -175,39 +177,40 @@ def dds_merge(original_list, update_list, verbose=False):
                 if key in original:
                     
                     original_value = original[key]
-                
+                    
                     if update_value != original_value and verbose:
-                            
+                        
                         print ("Modified field {} for indentifier "
                                "{}").format(key, identifier)
-                                   
-                    original.pop(key)
                     
+                    original.pop(key)
+                
                 elif verbose:
                     
                     print ("Added field {} for indentifier "
                            "{}").format(key, identifier)
-                    
+            
             for key, original_value in original.iteritems():
                 
                 merged[key] = original_value
-                
-            merged_list.append(merged)
             
+            merged_list.append(merged)
+        
         else:
             
             if verbose: print ("Added indentifier {}").format(identifier)
             
             merged_list.append(update)
-            
+    
     for identifier, original in original_dict.iteritems():
         
         if verbose: print ("Indentifier {} is missing").format(identifier)
         
         merged_list.append(original)
-        
-    return merged_list
     
+    return merged_list
+
+
 def xl_to_data_yaml(xl_path,
                     yaml_path,
                     ignore_column=None,
@@ -216,23 +219,23 @@ def xl_to_data_yaml(xl_path,
     
     '''Read an XL file and produce a yaml file of the form expected by
     the DataDefinition boundary class'''
-
+    
     data = xl_to_dds(xl_path,
-                    ignore_column,
-                    ignore_missing,
-                    sanitise_keys)
-        
+                     ignore_column,
+                     ignore_missing,
+                     sanitise_keys)
+    
     with open(yaml_path, 'w') as outfile:
         
         outfile.write(safe_dump(data,
                                 default_flow_style=False,
                                 encoding='utf-8',
                                 allow_unicode=True,
-                                explicit_start=True,
-                                Dumper=Dumper))
-                                     
-    return
+                                explicit_start=True))
     
+    return
+
+
 def dds_to_xl(dds_list,
               xl_path,
               root_cols=None):
@@ -259,23 +262,23 @@ def dds_to_xl(dds_list,
             else:
                 
                 root_keys = root_keys | {key}
-                
+    
     root_dict = {}
     
     for key in root_keys:
         
         value_list = []
-    
+        
         for definition in dds_list:
-    
+            
             if key in definition:
                 
                 value = definition[key]
-                
+            
             else:
                 
                 value = None
-                
+            
             value_list.append(value)
             
         root_dict[key.capitalize()] = value_list
@@ -289,14 +292,14 @@ def dds_to_xl(dds_list,
         max_length = 0
         
         for definition in dds_list:
-    
+            
             if key in definition:
                 
                 temp_dict[definition["identifier"]] = definition[key]
                 
                 if len(definition[key]) > max_length:
                     max_length = len(definition[key])
-                    
+        
         list_dict = {}
         list_dict["Identifier"] = []
         dummy_cols = []
@@ -306,7 +309,7 @@ def dds_to_xl(dds_list,
             col_name = "{} {}".format(key.capitalize(), i + 1)
             dummy_cols.append(col_name)
             list_dict[col_name] = []
-
+        
         for identifier, value in temp_dict.iteritems():
             
             list_dict["Identifier"].append(identifier)
@@ -321,11 +324,11 @@ def dds_to_xl(dds_list,
                 else:
                     
                     col_value = None
-                    
-                list_dict[col].append(col_value)
                 
-        df_dict[key.capitalize()] = list_dict
+                list_dict[col].append(col_value)
         
+        df_dict[key.capitalize()] = list_dict
+    
     writer = pd.ExcelWriter(xl_path)
     
     for sheet, df_dict in df_dict.iteritems():
@@ -334,16 +337,16 @@ def dds_to_xl(dds_list,
                         
             df = pd.DataFrame(df_dict,
                               columns=root_cols)
-                                          
+        
         else:
-
-            df = pd.DataFrame(df_dict)
             
+            df = pd.DataFrame(df_dict)
+        
         df = df.set_index(["Identifier"])
         df = df.sort_index()
         
         df.to_excel(writer, sheet_name=sheet)
-        
+    
     writer.save()
     
     # Fit the columns
@@ -361,18 +364,19 @@ def dds_to_xl(dds_list,
     #Save changes
     wb.Save()
     wb.Close()
-
-    return
     
+    return
+
+
 def xl_merge(original_xl_path,
              updated_xl_path,
              merged_xl_path=None,
              verbose=False,
              dry_run=False,
              preserve_order=True):
-                                  
+    
     if dry_run: verbose = True
-                         
+    
     if preserve_order:
         
         root_df = pd.read_excel(original_xl_path,
@@ -382,23 +386,24 @@ def xl_merge(original_xl_path,
     else:
         
         root_cols = None
-        
+    
     original_dds = xl_to_dds(original_xl_path)
     updated_dds = xl_to_dds(updated_xl_path)
     
     merged_dds = dds_merge(original_dds, updated_dds, verbose)
         
     if dry_run: return
-            
+    
     if merged_xl_path is None:
         
          original_root, ext = os.path.splitext(original_xl_path)
          merged_xl_path = original_root + "_merge" + ext
     
     dds_to_xl(merged_dds, merged_xl_path, root_cols)
-
-    return            
     
+    return
+
+
 def bootstrap_dds(xl_dir,
                   yaml_dir=None,
                   ignore_column=None,
@@ -419,7 +424,7 @@ def bootstrap_dds(xl_dir,
     
     # Filter out temporary buffer files.
     xl_paths = [path for path in xl_paths if "~$" not in path]
-
+    
     for xl_path in xl_paths:
         
         # Construct the path to the yaml DDS
@@ -439,7 +444,8 @@ def bootstrap_dds(xl_dir,
         xl_to_data_yaml(xl_path, yaml_path, ignore_column, ignore_missing)
     
     return
-    
+
+
 def mkdir_p(path):
     
     '''Create a directory structure based on path. Analagous to mkdir -p.
@@ -447,7 +453,7 @@ def mkdir_p(path):
     Args:
       path (str): directory tree to create.
     
-    '''    
+    '''
     
     try:
         os.makedirs(path)
@@ -455,18 +461,19 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else: raise
-
-    return
     
+    return
+
+
 def bootstrap_dds_interface():
     '''Command line interface for bootstrap_dds.
     
     Example:
     
         To get help::
-        
-            $ bootstrap_dds -h
             
+            $ bootstrap_dds -h
+    
     '''
     
     epiStr = ('''Mathew Topper, Tecnalia (c) 2015.''')
@@ -493,7 +500,7 @@ def bootstrap_dds_interface():
     parser.add_argument("-v", "--verbose",
                         help=("print verbose output"),
                         action='store_true')
-                                     
+    
     args = parser.parse_args()
     
     xldir       = args.xldir
@@ -502,18 +509,19 @@ def bootstrap_dds_interface():
     verbose     = args.verbose
             
     bootstrap_dds(xldir, yamldir, ignorecol, verbose=verbose)
-
-    return
     
+    return
+
+
 def xl_merge_interface():
     '''Command line interface for xl_merge.
     
     Example:
     
         To get help::
-        
-            $ xl_merge -h
             
+            $ xl_merge -h
+    
     '''
     
     epiStr = ('''Mathew Topper, Tecnalia (c) 2015.''')
@@ -543,7 +551,7 @@ def xl_merge_interface():
     parser.add_argument("-d", "--dry-run",
                         help=("print verbose output, without creating a file"),
                         action='store_true')
-                                     
+    
     args = parser.parse_args()
     
     original_path = args.original
@@ -557,9 +565,10 @@ def xl_merge_interface():
              merged_xl_path=merged_path,
              verbose=verbose,
              dry_run=dry_run)
-
-    return
     
+    return
+
+
 def _raise_dupes_error(file_name, sheet_name, duped_list):
     
     dupes = [item for item, count in Counter(duped_list).items()
@@ -569,4 +578,3 @@ def _raise_dupes_error(file_name, sheet_name, duped_list):
               "file {}:\n").format(sheet_name, file_name) + dupes_str
               
     raise KeyError(errStr)
-    
