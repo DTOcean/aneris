@@ -156,7 +156,12 @@ class Structure(object):
             data = pd.read_pickle(file_path)
         
         return data
+    
+    @classmethod
+    def equals(cls, left, right): 
         
+        return left == right
+    
     def __call__(self, data):
         
         value = self.get_value(data)
