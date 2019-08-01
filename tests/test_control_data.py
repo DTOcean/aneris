@@ -10,9 +10,12 @@ import os
 import sys
 import shutil
 import pickle
+from copy import deepcopy
 
 from aneris.boundary.data import SerialBox
-from aneris.control.data import DataValidation, DataStorage
+from aneris.control.data import (DataValidation,
+                                 DataStorage,
+                                 _check_valid_datastate)
 from aneris.entity.data import DataCatalog, DataPool, DataState, Data
 from aneris.utilities.files import mkdir_p
 from polite.paths import user_data_dir, module_dir
@@ -179,7 +182,8 @@ def test_remove_none_data_from_state():
     assert data_store.has_data(state, "Technology:Common:DeviceType") == False
     assert state.has_index("Technology:Common:DeviceType") == False
     assert len(pool) == 0
-    
+
+
 def test_copy_datastate():
     
     catalog = DataCatalog()
@@ -188,7 +192,7 @@ def test_copy_datastate():
     data_store = DataStorage(data)
     pool = DataPool()
     state = data_store.create_new_datastate("test")
-
+    
     # Get the meta data from the catalog
     metadata = catalog.get_metadata("Technology:Common:DeviceType")
     
@@ -197,7 +201,7 @@ def test_copy_datastate():
                                            state,
                                            "Technology:Common:DeviceType")
     data_index = state.get_index("Technology:Common:DeviceType")
-
+    
     assert data_value == "Tidal"
     assert len(pool) == 1
     assert pool._links[data_index] == 1
@@ -209,11 +213,106 @@ def test_copy_datastate():
     
     assert isinstance(new_state, DataState)
     assert new_state is not state
-    assert new_state.get_level() == "test"                                         
+    assert new_state.get_level() == "test"
     assert new_data_value == "Tidal"
     assert len(pool) == 1
     assert pool._links[data_index] == 2
+
+
+def test_import_datastate_from_clone():
     
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    pool = DataPool()
+    state = data_store.create_new_datastate("test")
+    
+    # Get the meta data from the catalog
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    
+    data_store.create_new_data(pool, state, catalog, "Tidal", metadata)
+    data_value = data_store.get_data_value(pool,
+                                           state,
+                                           "Technology:Common:DeviceType")
+    data_index = state.get_index("Technology:Common:DeviceType")
+    
+    assert data_value == "Tidal"
+    assert len(pool) == 1
+    assert pool._links[data_index] == 1
+    
+    # Clone the pool
+    src_pool = deepcopy(pool)
+    
+    assert len(src_pool) == 1
+    assert src_pool._links[data_index] == 1
+    
+    new_state = data_store.import_datastate(src_pool, pool, state)
+    new_data_value = data_store.get_data_value(pool,
+                                               new_state,
+                                               "Technology:Common:DeviceType")
+    
+    assert isinstance(new_state, DataState)
+    assert new_state is not state
+    assert new_state.get_level() == "test"
+    assert new_data_value == "Tidal"
+    assert len(pool) == 1
+    assert pool._links[data_index] == 2
+
+
+def test_import_datastate_from_new():
+    
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    
+    pool = DataPool()
+    state = data_store.create_new_datastate("test")
+    
+    # Get the meta data from the catalog
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    
+    data_store.create_new_data(pool, state, catalog, "Tidal", metadata)
+    data_value = data_store.get_data_value(pool,
+                                           state,
+                                           "Technology:Common:DeviceType")
+    data_index = state.get_index("Technology:Common:DeviceType")
+    
+    assert data_value == "Tidal"
+    assert len(pool) == 1
+    assert pool._links[data_index] == 1
+    
+    # Create a new pool
+    src_pool = DataPool()
+    src_state = data_store.create_new_datastate("test2")
+    
+    # Get the meta data from the catalog
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    
+    data_store.create_new_data(src_pool, src_state, catalog, "Wave", metadata)
+    src_data_value = data_store.get_data_value(src_pool,
+                                               src_state,
+                                               "Technology:Common:DeviceType")
+    src_data_index = src_state.get_index("Technology:Common:DeviceType")
+    
+    assert src_data_value == "Wave"
+    assert len(src_pool) == 1
+    assert src_pool._links[src_data_index] == 1
+    
+    new_state = data_store.import_datastate(src_pool, pool, src_state)
+    new_data_value = data_store.get_data_value(pool,
+                                               new_state,
+                                               "Technology:Common:DeviceType")
+    
+    assert isinstance(new_state, DataState)
+    assert new_state is not state
+    assert new_state.get_level() == "test2"
+    assert new_data_value == "Wave"
+    assert len(pool) == 2
+    assert pool._links[data_index] == 1
+
+
 def test_serialise_data(tmpdir):
 
     catalog = DataCatalog()
@@ -697,3 +796,79 @@ def test_create_pool_subset():
     
     assert id(state2) != id(new_state)
     assert set(state2.get_identifiers()) == set(new_state.get_identifiers())
+
+
+def test_copy_datastate_meta():
+    
+    data_store = DataStorage(data)
+    
+    # Create and store the first state
+    state = data_store.create_new_datastate("state1")
+    state.mask()
+    
+    test = data_store._copy_datastate_meta(state)
+    
+    assert isinstance(test, DataState)
+    assert test is not state
+    assert test.get_level() == "state1"
+    assert test.ismasked()
+
+
+def test_copy_datastate_meta_new_level():
+    
+    data_store = DataStorage(data)
+    
+    # Create and store the first state
+    state = data_store.create_new_datastate("state1")
+    
+    test = data_store._copy_datastate_meta(state, level="state2")
+    
+    assert isinstance(test, DataState)
+    assert test is not state
+    assert test.get_level() == "state2"
+    assert not test.ismasked()
+
+
+def test_get_data_obj_and_get_value():
+    
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    
+    # Get the meta data from the catalog
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    
+    data_obj = data_store._get_data_obj(metadata, "Tidal")
+    value =  data_store._get_value(data_obj)
+    
+    assert isinstance(data_obj, Data)
+    assert value == "Tidal"
+
+
+def test_check_valid_datastate():
+    
+    data_store = DataStorage(data)
+    
+    # Create and store the first state
+    state = data_store.create_new_datastate("state1")
+    
+    _check_valid_datastate(state)
+    
+    assert True
+
+
+def test_check_valid_datastate_error():
+    
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog, data)
+    data_store = DataStorage(data)
+    
+    # Get the meta data from the catalog
+    metadata = catalog.get_metadata("Technology:Common:DeviceType")
+    
+    data_obj = data_store._get_data_obj(metadata, "Tidal")
+    
+    with pytest.raises(ValueError):
+        _check_valid_datastate(data_obj)
