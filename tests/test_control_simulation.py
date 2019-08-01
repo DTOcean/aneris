@@ -343,6 +343,83 @@ def test_import_simulation_from_new(controller):
     assert len(pool) == 2
 
 
+def test_remove_simulation(controller):
+    
+    '''Test removing a simulation.'''
+    
+    pool = DataPool()
+    
+    test_interface = 'SPTInterface'
+    test_variable = 'site:wave:dir'
+    this_dir = os.path.dirname(__file__)
+    test_path = os.path.join(this_dir,
+                             'data',
+                             'test_spectrum_30min.spt'
+                             )
+    
+    interfacer = NamedSocket("FileInterface")
+    interfacer.discover_interfaces(interfaces)
+    file_interface = interfacer.get_interface_object(test_interface)
+    file_interface.set_file_path(test_path)
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    # Get the raw data from the interface
+    file_interface.connect()
+    raw_data = file_interface.get_data(test_variable)
+    
+    new_sim = Simulation("Hello World!")
+    controller.add_datastate(pool,
+                             new_sim,
+                             "executed",
+                             catalog,
+                             [test_variable],
+                             [raw_data])
+    
+    assert check_integrity(pool, [new_sim])
+    
+    # Create a new pool
+    src_pool = DataPool()
+    src_sim = Simulation("Goodbye World!")
+    
+    assert src_sim.count_states() == 0
+    
+    controller.add_datastate(src_pool,
+                             src_sim,
+                             "executed",
+                             catalog,
+                             [test_variable],
+                             [raw_data])
+    
+    assert src_sim.count_states() == 1
+    
+    assert check_integrity(src_pool, [src_sim])
+    
+    copy_sim = controller.import_simulation(src_pool,
+                                            pool,
+                                            src_sim,
+                                            "Fork Off!")
+    
+    new_levels = src_sim.get_all_levels()
+    copy_levels = copy_sim.get_all_levels()
+    
+    assert copy_sim.get_title() == "Fork Off!"
+    assert copy_sim.count_states() == 1
+    assert new_levels == copy_levels
+    assert check_integrity(pool, [new_sim, copy_sim])
+    assert len(pool) == 2
+    
+    controller.remove_simulation(pool,
+                                 copy_sim)
+    
+    assert check_integrity(pool, [new_sim])
+    assert len(pool) == 1
+    assert copy_sim.count_states() == 0
+
+
 def test_convert_state_to_box(controller, tmpdir):
     
     '''Test saving a datastate.'''
@@ -913,3 +990,50 @@ def test_load_simulation_root(controller, tmpdir):
     assert loaded_sim.get_title() == "Hello World!"
     assert new_levels == loaded_levels
 
+
+def test_copy_all_sim_states(controller):
+    
+    '''Test copying a simulation.'''
+    
+    pool = DataPool()
+    
+    test_interface = 'SPTInterface'
+    test_variable = 'site:wave:dir'
+    this_dir = os.path.dirname(__file__)
+    test_path = os.path.join(this_dir,
+                             'data',
+                             'test_spectrum_30min.spt'
+                             )
+    
+    interfacer = NamedSocket("FileInterface")
+    interfacer.discover_interfaces(interfaces)
+    file_interface = interfacer.get_interface_object(test_interface)
+    file_interface.set_file_path(test_path)
+    
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    # Get the raw data from the interface
+    file_interface.connect()
+    raw_data = file_interface.get_data(test_variable)
+    
+    new_sim = Simulation("Hello World!")
+    controller.add_datastate(pool,
+                             new_sim,
+                             "executed",
+                             catalog,
+                             [test_variable],
+                             [raw_data])
+    
+    old_states = new_sim._active_states[:]
+    old_states.extend(list(reversed(new_sim._redo_states[:])))
+    
+    copy_states = controller._copy_all_sim_states(new_sim)
+    
+    for old_state, copy_state in zip(old_states, copy_states):
+        
+        assert set(old_state.get_identifiers()) == \
+                                        set(copy_state.get_identifiers())
+        assert old_state != copy_state

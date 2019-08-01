@@ -569,6 +569,19 @@ class Controller(Loader):
         
         return new_simulation
     
+    def remove_simulation(self, pool,
+                                simulation):
+        
+        # Copy all states
+        all_states = self._copy_all_sim_states(simulation)
+        
+        for state in all_states:
+            self._store.remove_state(pool, state)
+        
+        simulation.clear_states()
+        
+        return
+    
     def create_new_hub(self, simulation,
                              interface_type,
                              hub_id,
@@ -1111,6 +1124,12 @@ class Controller(Loader):
         active_states = simulation.mirror_active_states()
         
         return active_states
+    
+    def _copy_all_sim_states(self, simulation):
+        
+        all_states = simulation.mirror_all_states()
+        
+        return all_states
     
     def _merge_and_stamp(self, old_simulation,
                                new_simulation,
