@@ -43,7 +43,7 @@ class Simple(Structure):
 
     def get_value(self, data):
 
-        return deepcopy(data)
+        return data
 
 
 class SimpleList(Structure):
@@ -96,3 +96,8 @@ class TableData(Structure):
     def get_value(self, data):
         
         return data.copy()
+    
+    @classmethod
+    def equals(cls, left, right):
+        
+        return left.equals(right)
