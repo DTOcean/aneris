@@ -10,6 +10,7 @@ import pytest
 import os
 import shutil
 import pickle
+from copy import deepcopy
 
 from aneris.boundary.data import SerialBox
 from aneris.control.simulation import Controller
@@ -202,12 +203,12 @@ def test_copy_simulation(controller):
     
     copy_sim = controller.copy_simulation(pool,
                                           new_sim,
-                                          "Fuck Off!")
+                                          "Fork Off!")
                                                     
     new_levels = new_sim.get_all_levels()
     copy_levels = copy_sim.get_all_levels()
     
-    assert copy_sim.get_title() == "Fuck Off!"
+    assert copy_sim.get_title() == "Fork Off!"
     assert new_levels == copy_levels
     assert check_integrity(pool, [new_sim, copy_sim])
     
@@ -216,7 +217,132 @@ def test_copy_simulation(controller):
                                        'site:wave:dir')
                                        
     assert len(series) == 64
+
+
+def test_import_simulation_from_clone(controller):
     
+    '''Test importing a simulation from a cloned pool'''
+    
+    pool = DataPool()
+    
+    test_interface = 'SPTInterface'
+    test_variable = 'site:wave:dir'
+    this_dir = os.path.dirname(__file__)
+    test_path = os.path.join(this_dir,
+                             'data',
+                             'test_spectrum_30min.spt'
+                             )
+    
+    interfacer = NamedSocket("FileInterface")
+    interfacer.discover_interfaces(interfaces)
+    file_interface = interfacer.get_interface_object(test_interface)
+    file_interface.set_file_path(test_path)
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    # Get the raw data from the interface
+    file_interface.connect()
+    raw_data = file_interface.get_data(test_variable)
+    
+    new_sim = Simulation("Hello World!")
+    controller.add_datastate(pool,
+                             new_sim,
+                             "executed",
+                             catalog,
+                             [test_variable],
+                             [raw_data])
+    
+    
+    assert check_integrity(pool, [new_sim])
+    
+    # Clone the pool
+    src_pool = deepcopy(pool)
+    
+    assert check_integrity(src_pool, [new_sim])
+    
+    copy_sim = controller.import_simulation(src_pool,
+                                            pool,
+                                            new_sim,
+                                            "Fork Off!")
+    
+    new_levels = new_sim.get_all_levels()
+    copy_levels = copy_sim.get_all_levels()
+    
+    assert copy_sim.get_title() == "Fork Off!"
+    assert new_levels == copy_levels
+    assert check_integrity(pool, [new_sim, copy_sim])
+    assert len(pool) == 1
+
+
+def test_import_simulation_from_new(controller):
+    
+    '''Test importing a simulation from a new pool'''
+    
+    test_interface = 'SPTInterface'
+    test_variable = 'site:wave:dir'
+    this_dir = os.path.dirname(__file__)
+    test_path = os.path.join(this_dir,
+                             'data',
+                             'test_spectrum_30min.spt'
+                             )
+    
+    interfacer = NamedSocket("FileInterface")
+    interfacer.discover_interfaces(interfaces)
+    file_interface = interfacer.get_interface_object(test_interface)
+    file_interface.set_file_path(test_path)
+
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    # Get the raw data from the interface
+    file_interface.connect()
+    raw_data = file_interface.get_data(test_variable)
+    
+    pool = DataPool()
+    new_sim = Simulation("Hello World!")
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             "executed",
+                             catalog,
+                             [test_variable],
+                             [raw_data])
+    
+    
+    assert check_integrity(pool, [new_sim])
+    
+    # Create a new pool
+    src_pool = DataPool()
+    src_sim = Simulation("Goodbye World!")
+    
+    controller.add_datastate(src_pool,
+                             src_sim,
+                             "executed",
+                             catalog,
+                             [test_variable],
+                             [raw_data])
+    
+    assert check_integrity(src_pool, [src_sim])
+    
+    copy_sim = controller.import_simulation(src_pool,
+                                            pool,
+                                            src_sim,
+                                            "Fork Off!")
+    
+    new_levels = src_sim.get_all_levels()
+    copy_levels = copy_sim.get_all_levels()
+    
+    assert copy_sim.get_title() == "Fork Off!"
+    assert new_levels == copy_levels
+    assert check_integrity(pool, [new_sim, copy_sim])
+    assert len(pool) == 2
+
+
 def test_convert_state_to_box(controller, tmpdir):
     
     '''Test saving a datastate.'''
