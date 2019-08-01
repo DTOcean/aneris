@@ -84,15 +84,15 @@ class SimpleList(Structure):
 
 
 class TableData(Structure):
-
+    
     '''Structure represented in a pandas dataframe'''
-
+    
     def get_data(self, raw, meta_data):
-
+        
         dataframe = pd.DataFrame(raw)
-
+        
         return dataframe
-
+    
     def get_value(self, data):
-
+        
         return data.copy()
