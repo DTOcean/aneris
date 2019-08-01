@@ -155,13 +155,13 @@ def test_add_datastate_obj(controller):
     series = controller.get_data_value(pool,
                                        new_sim,
                                        'site:wave:dir')
-
+    
     assert len(pool) == 2 * pre_pool_length
     assert check_integrity(pool, [new_sim])
     assert pseudo_state.count() == 1
     assert len(series) == 64
 
-    
+
 def test_copy_simulation(controller):
     
     '''Test copying a simulation.'''

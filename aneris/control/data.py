@@ -225,50 +225,50 @@ class DataStorage(Plugin):
             errStr = ("Given datastate is of wrong type. Expected DataState "
                       "but recieved {}.").format(datastate.__class__.__name__)
             raise ValueError(errStr)
-
+        
         if data_obj is None:
             
             data_index = None
-            
-        else:
         
+        else:
+            
             data_index = pool.add(data_obj)
             pool.link(data_index)
             
             log_msg = ('New "{}" data stored with index '
                        '{}').format(data_identifier, data_index)
             module_logger.info(log_msg)
-            
+        
         if (datastate.has_index(data_identifier) and
                 datastate.get_index(data_identifier) is not None):
             
             self.remove_data_from_state(pool, datastate, data_identifier)
-            
-        datastate.add_index(data_identifier, data_index)
-
-        return
         
+        datastate.add_index(data_identifier, data_index)
+        
+        return
+    
     def remove_state(self, pool, datastate):
-                
+        
         '''Remove an indentifier from the datastate and unlink it from the
         pool. If the data in the pool has no remaining links then delete it.'''
         
         if datastate.get_level() is not None:
             log_msg = ('Trying to remove datastate with level '
-                       '{}').format(datastate.get_level())           
+                       '{}').format(datastate.get_level())
         else:
             log_msg = 'Trying to remove datastate'
-            
+        
         module_logger.info(log_msg)
         
-        for data_identifier in datastate.get_identifiers():            
+        for data_identifier in datastate.get_identifiers():
             
             self.remove_data_from_state(pool,
                                         datastate,
                                         data_identifier)
-                                                            
-        return
         
+        return
+    
     def remove_data_from_state(self, pool, datastate, data_identifier):
         
         '''Remove an indentifier from the datastate and unlink it from the
@@ -289,9 +289,9 @@ class DataStorage(Plugin):
         module_logger.info(log_msg)
         
         if data_index is None: return
-            
+        
         pool.unlink(data_index)
-                
+        
         if not pool.has_link(data_index):
             
             pool.pop(data_index)
@@ -300,7 +300,7 @@ class DataStorage(Plugin):
                        '{} from pool').format(data_identifier,
                                               data_index)
             module_logger.info(log_msg)
-
+        
         return
     
     def create_new_data(self, pool,
