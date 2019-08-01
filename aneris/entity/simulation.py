@@ -263,7 +263,15 @@ class Simulation(object):
         self._merged_state = None
                                     
         return
+    
+    def clear_states(self):
         
+        self._active_states = []
+        self._redo_states = []
+        self._merged_state = None
+        
+        return
+    
     def get_active_levels(self, show_none=False,
                                 show_masked=True):
         
