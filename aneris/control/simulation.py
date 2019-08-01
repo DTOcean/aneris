@@ -513,8 +513,7 @@ class Controller(Loader):
                               simulation,
                               force_title=None,
                               null_title=False,
-                              no_merge=False,
-                              compact_none_states=True):
+                              no_merge=False):
         
         # Copy simulation class
         new_simulation = _copy_sim_class(simulation,
@@ -525,10 +524,9 @@ class Controller(Loader):
         _copy_sim_hubs(simulation, new_simulation)
         
         # Copy the active states
-        active_states = self._copy_active_sim_states(simulation,
-                                                     compact_none_states)
+        active_states = self._copy_active_sim_states(simulation)
         
-        for state in active_states: 
+        for state in active_states:
             new_state = self._store.copy_datastate(pool, state)
             new_simulation.add_state(new_state)
         
@@ -544,8 +542,7 @@ class Controller(Loader):
                                 simulation,
                                 force_title=None,
                                 null_title=False,
-                                no_merge=False,
-                                compact_none_states=True):
+                                no_merge=False):
         
         # Copy simulation class
         new_simulation = _copy_sim_class(simulation,
@@ -556,10 +553,10 @@ class Controller(Loader):
         _copy_sim_hubs(simulation, new_simulation)
         
         # Copy the active states
-        active_states = self._copy_active_sim_states(simulation,
-                                                     compact_none_states)
-           
-        for state in active_states: 
+        active_states = self._copy_active_sim_states(simulation)
+        
+        for state in active_states:
+            
             new_state = self._store.import_datastate(src_pool,
                                                      dst_pool,
                                                      state)
@@ -1109,14 +1106,9 @@ class Controller(Loader):
         
         return
     
-    def _copy_active_sim_states(self, simulation,
-                                      compact_none_states=True):
+    def _copy_active_sim_states(self, simulation):
     
         active_states = simulation.mirror_active_states()
-            
-        # Compact None states
-        if compact_none_states:
-           active_states = self._compact_none_states(active_states)
         
         return active_states
     
@@ -1134,33 +1126,6 @@ class Controller(Loader):
         new_simulation = old_simulation.stamp(new_simulation)
         
         return new_simulation
-    
-    def _compact_none_states(self, state_list):
-        
-        level_states = [x for x in state_list if x.get_level is not None]
-        none_states = [x for x in state_list if x.get_level is None]
-        
-        merged_map = {}
-        
-        for state in none_states:
-            
-            # Raise an error if any None states are masked.
-            # Probably should never occur.
-            if state.ismasked():
-                
-                errStr = ("State list can not be compacted if states without "
-                          "levels are masked")
-                raise RuntimeError(errStr)
-            
-            data_map = state.mirror_map()
-            merged_map = self._update_dict(merged_map,
-                                           data_map)
-        
-        compact_state = self._store.create_new_datastate(force_map=merged_map)
-        new_states = [compact_state]
-        new_states.extend(level_states)
-        
-        return new_states
     
     def _mask_after_level(self, simulation, level, force_masks=None):
                         
