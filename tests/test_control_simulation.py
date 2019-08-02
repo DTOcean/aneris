@@ -1037,3 +1037,171 @@ def test_copy_all_sim_states(controller):
         assert set(old_state.get_identifiers()) == \
                                         set(copy_state.get_identifiers())
         assert old_state != copy_state
+
+
+def test_make_compact_state_same_var(controller):
+    
+    pool = DataPool()
+    
+    test_variable = 'site:wave:dir'
+    
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    new_sim = Simulation("Hello World!")
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [test_variable],
+                             [[1]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [test_variable],
+                             [[2]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [test_variable],
+                             [[3]])
+    
+    last_state = new_sim._active_states[-1]
+    
+    all_states = new_sim.mirror_active_states()
+    
+    test = controller._make_compact_state(all_states)
+    
+    assert len(test) == 1
+    assert test.get_index(test_variable) == last_state.get_index(test_variable)
+
+
+def test_make_compact_multi_vars(controller):
+    
+    pool = DataPool()
+    
+    var1 = 'site:wave:dir'
+    var2 = 'site:wave:PSD1D'
+    
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    new_sim = Simulation("Hello World!")
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[1]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var2],
+                             [[2]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[3]])
+    
+    last_state = new_sim._active_states[-1]
+    
+    all_states = new_sim.mirror_active_states()
+    
+    test = controller._make_compact_state(all_states)
+    
+    assert len(test) == 2
+    assert test.get_index(var1) == last_state.get_index(var1)
+
+
+def test_compact_none_states(controller):
+    
+    pool = DataPool()
+    
+    var1 = 'site:wave:dir'
+    
+    catalog = DataCatalog()
+    validation = DataValidation(meta_cls=data_plugins.MyMetaData)
+    validation.update_data_catalog_from_definitions(catalog,
+                                                    data_plugins)
+    
+    new_sim = Simulation("Hello World!")
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[1]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[2]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             "level1",
+                             catalog,
+                             [var1],
+                             [[3]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[1]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[2]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             "level2",
+                             catalog,
+                             [var1],
+                             [[3]])
+    
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[1]])
+    
+    controller.add_datastate(pool,
+                             new_sim,
+                             None,
+                             catalog,
+                             [var1],
+                             [[2]])
+    
+    all_states = new_sim.mirror_active_states()
+    
+    test = controller._compact_none_states(all_states)
+    all_levels = [x.get_level() for x in test]
+    
+    assert len(test) == 5
+    assert all_levels == [None, "level1", None, "level2", None]

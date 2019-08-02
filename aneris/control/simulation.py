@@ -513,7 +513,8 @@ class Controller(Loader):
                               simulation,
                               force_title=None,
                               null_title=False,
-                              no_merge=False):
+                              no_merge=False,
+                              compact_none_states=True):
         
         # Copy simulation class
         new_simulation = _copy_sim_class(simulation,
@@ -524,7 +525,8 @@ class Controller(Loader):
         _copy_sim_hubs(simulation, new_simulation)
         
         # Copy the active states
-        active_states = self._copy_active_sim_states(simulation)
+        active_states = self._copy_active_sim_states(simulation,
+                                                     compact_none_states)
         
         for state in active_states:
             new_state = self._store.copy_datastate(pool, state)
@@ -542,7 +544,8 @@ class Controller(Loader):
                                 simulation,
                                 force_title=None,
                                 null_title=False,
-                                no_merge=False):
+                                no_merge=False,
+                                compact_none_states=True):
         
         # Copy simulation class
         new_simulation = _copy_sim_class(simulation,
@@ -553,7 +556,8 @@ class Controller(Loader):
         _copy_sim_hubs(simulation, new_simulation)
         
         # Copy the active states
-        active_states = self._copy_active_sim_states(simulation)
+        active_states = self._copy_active_sim_states(simulation,
+                                                     compact_none_states)
         
         for state in active_states:
             
@@ -1119,9 +1123,13 @@ class Controller(Loader):
         
         return
     
-    def _copy_active_sim_states(self, simulation):
+    def _copy_active_sim_states(self, simulation,
+                                      compact_none_states=False):
     
         active_states = simulation.mirror_active_states()
+        
+        if compact_none_states:
+           active_states = self._compact_none_states(active_states)
         
         return active_states
     
@@ -1130,6 +1138,59 @@ class Controller(Loader):
         all_states = simulation.mirror_all_states()
         
         return all_states
+    
+    def _compact_none_states(self, state_list):
+        """Merge groups of states without levels into single states, while 
+        preserving ordering between labelled states"""
+        
+        new_states = []
+        none_states = []
+        
+        for state in state_list:
+            
+            if state.get_level() is None:
+                
+                # Raise an error if any None states are masked.
+                if state.ismasked():
+                    
+                    errStr = ("State list can not be compacted if states "
+                              "without levels are masked")
+                    raise RuntimeError(errStr)
+                
+                none_states.append(state)
+                
+                continue
+            
+            if none_states:
+                
+                compact_state = self._make_compact_state(none_states)
+                new_states.append(compact_state)
+                none_states = []
+            
+            new_states.append(state)
+        
+        if none_states:
+            
+           compact_state = self._make_compact_state(none_states)
+           new_states.append(compact_state)
+        
+        return new_states
+    
+    def _make_compact_state(self, state_list, level=None):
+        
+        merged_map = {}
+            
+        for state in state_list:
+            
+            data_map = state.mirror_map()
+            merged_map = self._update_dict(merged_map,
+                                           data_map)
+        
+        compact_state = self._store.create_new_datastate(
+                                                level=level,
+                                                force_map=merged_map)
+        
+        return compact_state
     
     def _merge_and_stamp(self, old_simulation,
                                new_simulation,
