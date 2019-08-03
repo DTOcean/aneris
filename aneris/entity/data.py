@@ -308,9 +308,10 @@ class BaseState(object):
             errStr = "All keys in data_map must be strings."
             raise ValueError(errStr)
             
-        if not all(isinstance(x, basestring) for x in data_map.values()):
+        if not all(isinstance(x, (basestring, type(None)))
+                                    for x in data_map.values()):
             
-            errStr = "All values in data_map must be strings."
+            errStr = "All values in data_map must be strings or None."
             raise ValueError(errStr)
             
         return data_map
