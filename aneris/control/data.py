@@ -201,8 +201,15 @@ class DataStorage(Plugin):
                 src_value = self._get_value(src_data)
                 dst_value = self._get_value(dst_data)
                 
-                if dst_structure.equals(src_value, dst_value):
-                    dst_contains_data = True
+                try:
+                    if dst_structure.equals(src_value, dst_value):
+                        dst_contains_data = True
+                except Exception:
+                    msgStr = ("Comparison of data with identifier {} failed "
+                              "with an unexpected error:"
+                              "\n{}").format(data_identifier,
+                                             traceback.format_exc())
+                    raise Exception(msgStr)
             
             if not dst_contains_data:
                 data_index = dst_pool.add(src_data)
