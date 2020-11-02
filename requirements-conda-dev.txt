@@ -1,5 +1,6 @@
 # REQUIREMENTS FOR CONDA INSTALLATION (EXCLUDING DTOCEAN PACKAGES)
 attrdict
+et-xmlfile
 numpy
 openpyxl <3
 pandas >=0.20
