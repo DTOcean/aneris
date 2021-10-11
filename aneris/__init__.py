@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Define build number for packaging test
-from ._build import BUILD
-__build__ = BUILD
+import logging
+from pkg_resources import get_distribution
 
 # Set default logging handler to avoid "No handler found" warnings.
-import logging
 try:  # Python 2.7+
     from logging import NullHandler
 except ImportError:
@@ -14,3 +12,7 @@ except ImportError:
             pass
 
 logging.getLogger(__name__).addHandler(NullHandler())
+
+# credentials
+__authors__ = ['DTOcean Developers']
+__version__ = get_distribution('aneris').version
