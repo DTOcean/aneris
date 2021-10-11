@@ -1,7 +1,7 @@
 # REQUIREMENTS FOR CONDA INSTALLATION (EXCLUDING DTOCEAN PACKAGES)
 attrdict
 numpy
-openpyxl
+openpyxl <3
 pandas >=0.20
 pywin32
 pyyaml
