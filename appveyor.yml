@@ -7,13 +7,6 @@
 #      general configuration      #
 #---------------------------------#
 
-# Build only for commits to certain locations
-only_commits:
-  files:
-    - aneris/
-    - tests/
-    - setup.py
-
 # version format
 version: 0.10.2-build{build}
 
@@ -41,7 +34,7 @@ install:
   - conda install polite=0.10.1
   - conda install --file requirements-conda-dev.txt
   - pip install -e .
-  - conda install dtocean-dummy-module pytest pytest-cov pytest-mock
+  - conda install dtocean-dummy-module mock pytest pytest-cov=2.5.1 pytest-mock
   
 build: off
   
