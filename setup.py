@@ -87,7 +87,7 @@ setup(name='aneris',
                         'pywin32',
                         'pyyaml',
                         'sqlalchemy',
-                        'xlrd',
+                        'xlrd<2',
                         'xlwt'
                         ],
       entry_points={
