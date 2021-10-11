@@ -188,7 +188,7 @@ class DataStorage(Plugin):
             src_structure_name = src_data.get_structure_name()
             
             # Check for matching indexes and data
-            if data_index in dst_pool._data_indexes:
+            if data_index in dst_pool:
                 
                 dst_data = dst_pool.get(data_index)
                 dst_structure_name = dst_data.get_structure_name()

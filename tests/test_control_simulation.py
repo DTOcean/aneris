@@ -5,15 +5,17 @@ Created on Wed Jan 21 17:28:04 2015
 @author: Mathew Topper
 """
 
-import pytest
+# pylint: disable=redefined-outer-name,protected-access
 
 import os
 import shutil
 import pickle
 from copy import deepcopy
 
+import pytest
+
 from aneris.boundary.data import SerialBox
-from aneris.control.simulation import Controller
+from aneris.control.simulation import Controller, _copy_all_sim_states
 from aneris.control.pipeline import Sequencer
 from aneris.control.data import DataValidation, DataStorage
 from aneris.control.sockets import NamedSocket
@@ -1030,7 +1032,7 @@ def test_copy_all_sim_states(controller):
     old_states = new_sim._active_states[:]
     old_states.extend(list(reversed(new_sim._redo_states[:])))
     
-    copy_states = controller._copy_all_sim_states(new_sim)
+    copy_states = _copy_all_sim_states(new_sim)
     
     for old_state, copy_state in zip(old_states, copy_states):
         

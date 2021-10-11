@@ -577,7 +577,7 @@ class Controller(Loader):
                                 simulation):
         
         # Copy all states
-        all_states = self._copy_all_sim_states(simulation)
+        all_states = _copy_all_sim_states(simulation)
         
         for state in all_states:
             self._store.remove_state(pool, state)
@@ -1133,12 +1133,6 @@ class Controller(Loader):
         
         return active_states
     
-    def _copy_all_sim_states(self, simulation):
-        
-        all_states = simulation.mirror_all_states()
-        
-        return all_states
-    
     def _compact_none_states(self, state_list):
         """Merge groups of states without levels into single states, while 
         preserving ordering between labelled states"""
@@ -1170,9 +1164,8 @@ class Controller(Loader):
             new_states.append(state)
         
         if none_states:
-            
-           compact_state = self._make_compact_state(none_states)
-           new_states.append(compact_state)
+            compact_state = self._make_compact_state(none_states)
+            new_states.append(compact_state)
         
         return new_states
     
@@ -1269,6 +1262,11 @@ def _copy_sim_hubs(old_simulation,
         new_simulation.set_hub(hub_id, hub_copy)
     
     return
+
+
+def _copy_all_sim_states(simulation):
+    all_states = simulation.mirror_all_states()
+    return all_states
 
 
 def _get_executed_outputs(completed_interfaces,

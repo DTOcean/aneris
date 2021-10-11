@@ -5,6 +5,8 @@ Created on Wed Jan 21 17:28:04 2015
 @author: Mathew Topper
 """
 
+# pylint: disable=redefined-outer-name
+
 import pytest
 
 from aneris.control.simulation import Controller

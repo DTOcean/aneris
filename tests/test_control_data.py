@@ -4,21 +4,23 @@
 .. moduleauthor:: Mathew Topper <mathew.topper@tecnalia.com>
 """
 
-import pytest
+# pylint: disable=protected-access
 
 import os
-import sys
+#import sys
 import shutil
 import pickle
 from copy import deepcopy
+
+import pytest
 
 from aneris.boundary.data import SerialBox
 from aneris.control.data import (DataValidation,
                                  DataStorage,
                                  _check_valid_datastate)
 from aneris.entity.data import DataCatalog, DataPool, DataState, Data
-from aneris.utilities.files import mkdir_p
-from polite.paths import user_data_dir, module_dir
+#from aneris.utilities.files import mkdir_p
+#from polite.paths import user_data_dir, module_dir
 
 import data_plugins as data
 import user_plugins as user_data
@@ -840,7 +842,7 @@ def test_get_data_obj_and_get_value():
     metadata = catalog.get_metadata("Technology:Common:DeviceType")
     
     data_obj = data_store._get_data_obj(metadata, "Tidal")
-    value =  data_store._get_value(data_obj)
+    value = data_store._get_value(data_obj)
     
     assert isinstance(data_obj, Data)
     assert value == "Tidal"
