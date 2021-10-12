@@ -28,17 +28,27 @@ def test_get_module_names_from_package():
 
     assert names == ['logging.config', 'logging.handlers']
 
+
 def test_get_module_names_from_paths():
-
+    
     '''Test if we can retrieve the root package name from the source code'''
-
+    
     # Get this module path and then the directory above it.
     this_mod = sys.modules[__name__]
     mod_path = module_path(this_mod)
     root_dir = '{}\\..'.format(os.path.dirname(mod_path))
     names = get_module_names_from_paths([root_dir])
+    
+    # Get the expected names by looking for py files in the root_dir
+    expected = []
+    
+    for check_file in os.listdir(root_dir):
+        if check_file.endswith(".py"):
+            name, _ = os.path.splitext(check_file)
+            expected.append(name)
+    
+    assert set(names) >= set(expected)
 
-    assert names == ['aneris', 'setup']
 
 def test_get_class_descriptions_from_module():
 
