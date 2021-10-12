@@ -1,6 +1,6 @@
 [![appveyor](https://ci.appveyor.com/api/projects/status/github/DTOcean/aneris?branch=master&svg=true)](https://ci.appveyor.com/project/DTOcean/aneris)
 [![codecov](https://codecov.io/gh/DTOcean/aneris/branch/master/graph/badge.svg)](https://codecov.io/gh/DTOcean/aneris)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc6bdc4f62ed4fd09298c9b58a09b1d1)](https://www.codacy.com//project/H0R5E/aneris/dashboard??utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DTOcean/aneris&amp;utm_campaign=Badge_Grade&amp;branchId=11661678)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/31fbdbe9502b4985a6b8d4222fd13923)](https://www.codacy.com/gh/DTOcean/aneris/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DTOcean/aneris&amp;utm_campaign=Badge_Grade)
 [![release](https://img.shields.io/github/release/DTOcean/aneris.svg)](https://github.com/DTOcean/aneris/releases/latest)
 
 # aneris
@@ -11,7 +11,7 @@ files, databases, python packages, etc.) and execution ordering.
 It is the framework on which [dtocean-core](
 https://github.com/DTOcean/dtocean-core) is built.
 
-* For python 2.7 only.
+\* For python 2.7 only.
 
 ## Installation
 
@@ -41,6 +41,13 @@ channels:
 ```
 $ conda activate _aneris
 $ copy .condarc %CONDA_PREFIX%
+```
+
+OR, if you're using Powershell:
+
+```
+$ conda activate _aneris
+$ copy .condarc $env:CONDA_PREFIX
 ```
 
 Install [polite](https://github.com/DTOcean/polite) into the environment. For 
@@ -81,13 +88,20 @@ $ conda activate _aneris
 Install pytest to the environment (one time only):
 
 ```
-$ conda install -y pytest
+$ conda install -y mock pytest pytest-mock
+```
+
+Optionally, you can also install [dtocean-dummy-module](https://github.com/DTOcean/dtocean-dummy-module)
+for additional tests:
+
+```
+$ conda install -y dtocean-dummy-module mock pytest pytest-mock
 ```
 
 Run the tests:
 
 ``` 
-$ py.test tests
+$ pytest tests
 ```
 
 ### Uninstall

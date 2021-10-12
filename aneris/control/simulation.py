@@ -506,58 +506,86 @@ class Controller(Loader):
         
         super(Controller, self).__init__(datastore)
         self._sequencer = sequencer
-
-        return
         
+        return
+    
     def copy_simulation(self, pool,
                               simulation,
                               force_title=None,
                               null_title=False,
                               no_merge=False,
                               compact_none_states=True):
-                                          
-        # Set the title
-        if null_title:
-            title = None
-        elif force_title is None:
-            title = simulation.get_title()
-        else:
-            title = force_title
         
-        # Create an instance of the given class
-        SimCls = simulation.__class__
-        new_simulation = SimCls(title)
+        # Copy simulation class
+        new_simulation = _copy_sim_class(simulation,
+                                         force_title,
+                                         null_title)
         
-        # Copy the hubs
-        hub_ids = simulation.get_hub_ids()
-        
-        for hub_id in hub_ids:
-            hub = simulation.get_hub(hub_id)
-            hub_copy = deepcopy(hub)
-            new_simulation.set_hub(hub_id, hub_copy)
+        # Copy hubs
+        _copy_sim_hubs(simulation, new_simulation)
         
         # Copy the active states
-        active_states = simulation.mirror_active_states()
+        active_states = self._copy_active_sim_states(simulation,
+                                                     compact_none_states)
         
-        # Compact None states
-        if compact_none_states:
-           active_states = self._compact_none_states(active_states)
-           
-        for state in active_states: 
+        for state in active_states:
             new_state = self._store.copy_datastate(pool, state)
             new_simulation.add_state(new_state)
-            
-        if no_merge: return new_simulation
-            
-        # Update the merged state stored in the simulation
-        merged_state = self._merge_active_states(new_simulation)
-        new_simulation.set_merged_state(merged_state)
         
         # Do any final copying steps
-        new_simulation = simulation.stamp(new_simulation)
-            
-        return new_simulation
+        new_simulation = self._merge_and_stamp(simulation,
+                                               new_simulation,
+                                               no_merge)
         
+        return new_simulation
+    
+    def import_simulation(self, src_pool,
+                                dst_pool,
+                                simulation,
+                                force_title=None,
+                                null_title=False,
+                                no_merge=False,
+                                compact_none_states=True):
+        
+        # Copy simulation class
+        new_simulation = _copy_sim_class(simulation,
+                                         force_title,
+                                         null_title)
+        
+        # Copy hubs
+        _copy_sim_hubs(simulation, new_simulation)
+        
+        # Copy the active states
+        active_states = self._copy_active_sim_states(simulation,
+                                                     compact_none_states)
+        
+        for state in active_states:
+            
+            new_state = self._store.import_datastate(src_pool,
+                                                     dst_pool,
+                                                     state)
+            new_simulation.add_state(new_state)
+        
+        # Do any final copying steps
+        new_simulation = self._merge_and_stamp(simulation,
+                                               new_simulation,
+                                               no_merge)
+        
+        return new_simulation
+    
+    def remove_simulation(self, pool,
+                                simulation):
+        
+        # Copy all states
+        all_states = _copy_all_sim_states(simulation)
+        
+        for state in all_states:
+            self._store.remove_state(pool, state)
+        
+        simulation.clear_states()
+        
+        return
+    
     def create_new_hub(self, simulation,
                              interface_type,
                              hub_id,
@@ -948,11 +976,10 @@ class Controller(Loader):
                     
             if end_index is not None:
                 
-                exectuted_outputs = self._get_executed_outputs(
-                                                    completed_interfaces,
-                                                    start_index,
-                                                    end_index,
-                                                    exectuted_outputs)
+                exectuted_outputs = _get_executed_outputs(completed_interfaces,
+                                                          start_index,
+                                                          end_index,
+                                                          exectuted_outputs)
                 
             else:
                 
@@ -1095,7 +1122,84 @@ class Controller(Loader):
         hub.reset()
         
         return
+    
+    def _copy_active_sim_states(self, simulation,
+                                      compact_none_states=False):
+    
+        active_states = simulation.mirror_active_states()
         
+        if compact_none_states:
+           active_states = self._compact_none_states(active_states)
+        
+        return active_states
+    
+    def _compact_none_states(self, state_list):
+        """Merge groups of states without levels into single states, while 
+        preserving ordering between labelled states"""
+        
+        new_states = []
+        none_states = []
+        
+        for state in state_list:
+            
+            if state.get_level() is None:
+                
+                # Raise an error if any None states are masked.
+                if state.ismasked():
+                    
+                    errStr = ("State list can not be compacted if states "
+                              "without levels are masked")
+                    raise RuntimeError(errStr)
+                
+                none_states.append(state)
+                
+                continue
+            
+            if none_states:
+                
+                compact_state = self._make_compact_state(none_states)
+                new_states.append(compact_state)
+                none_states = []
+            
+            new_states.append(state)
+        
+        if none_states:
+            compact_state = self._make_compact_state(none_states)
+            new_states.append(compact_state)
+        
+        return new_states
+    
+    def _make_compact_state(self, state_list, level=None):
+        
+        merged_map = {}
+            
+        for state in state_list:
+            
+            data_map = state.mirror_map()
+            merged_map = self._update_dict(merged_map,
+                                           data_map)
+        
+        compact_state = self._store.create_new_datastate(
+                                                level=level,
+                                                force_map=merged_map)
+        
+        return compact_state
+    
+    def _merge_and_stamp(self, old_simulation,
+                               new_simulation,
+                               no_merge=False):
+        
+        if not no_merge:
+            
+            # Update the merged state stored in the simulation
+            merged_state = self._merge_active_states(new_simulation)
+            new_simulation.set_merged_state(merged_state)
+        
+        # Do any final copying steps
+        new_simulation = old_simulation.stamp(new_simulation)
+        
+        return new_simulation
+    
     def _mask_after_level(self, simulation, level, force_masks=None):
                         
         # Remove all existing masks
@@ -1127,47 +1231,58 @@ class Controller(Loader):
                                                       
         return
 
-    def _compact_none_states(self, state_list):
-        
-        level_states = [x for x in state_list if x.get_level is not None]
-        none_states = [x for x in state_list if x.get_level is None]
-        
-        merged_map = {}
-                
-        for state in none_states:
 
-            # Raise an error if any None states are masked.
-            # Probably should never occur.
-            if state.ismasked():
-                
-                errStr = ("State list can not be compacted if states without "
-                          "levels are masked")
-                raise RuntimeError(errStr)
-            
-            data_map = state.mirror_map()
-            merged_map = self._update_dict(merged_map,
-                                           data_map)
-                                           
-        compact_state = self._store.create_new_datastate(force_map=merged_map)
-        new_states = [compact_state]
-        new_states.extend(level_states)
-
-        return new_states
-
-    def _get_executed_outputs(self, completed_interfaces,
-                                    start_index,
-                                    end_index,
-                                    exectuted_outputs):
-        
-        completed_interface_names = completed_interfaces.keys()
-        
-        next_completed_interfaces = completed_interface_names[
-                                                      start_index:end_index]
+def _copy_sim_class(simulation,
+                    force_title=None,
+                    null_title=False):
     
-        for next_cls_name in next_completed_interfaces:
-            
-            interface_obj = completed_interfaces[next_cls_name]
-            outputs = interface_obj.get_outputs()
-            exectuted_outputs.extend(outputs)
-            
-        return exectuted_outputs
+    # Set the title
+    if null_title:
+        title = None
+    elif force_title is None:
+        title = simulation.get_title()
+    else:
+        title = force_title
+    
+    # Create an instance of the given class
+    SimCls = simulation.__class__
+    new_simulation = SimCls(title)
+    
+    return new_simulation
+
+
+def _copy_sim_hubs(old_simulation,
+                   new_simulation):
+    
+    hub_ids = old_simulation.get_hub_ids()
+    
+    for hub_id in hub_ids:
+        hub = old_simulation.get_hub(hub_id)
+        hub_copy = deepcopy(hub)
+        new_simulation.set_hub(hub_id, hub_copy)
+    
+    return
+
+
+def _copy_all_sim_states(simulation):
+    all_states = simulation.mirror_all_states()
+    return all_states
+
+
+def _get_executed_outputs(completed_interfaces,
+                          start_index,
+                          end_index,
+                          exectuted_outputs):
+    
+    completed_interface_names = completed_interfaces.keys()
+    
+    next_completed_interfaces = completed_interface_names[
+                                                  start_index:end_index]
+    
+    for next_cls_name in next_completed_interfaces:
+        
+        interface_obj = completed_interfaces[next_cls_name]
+        outputs = interface_obj.get_outputs()
+        exectuted_outputs.extend(outputs)
+    
+    return exectuted_outputs

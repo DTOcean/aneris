@@ -158,16 +158,8 @@ class DataStorage(Plugin):
         
     def copy_datastate(self, pool, datastate, level=None):
         
-        if not hasattr(datastate, "add_index"):
-            
-            errStr = ("Given datastate is of wrong type. Expected DataState "
-                      "but recieved {}.").format(datastate.__class__.__name__)
-            raise ValueError(errStr)
-            
-        if level is None: level = datastate.get_level()
-            
-        new_datastate = self.create_new_datastate(level)
-        if datastate.ismasked(): new_datastate.mask()
+        _check_valid_datastate(datastate)
+        new_datastate = self._copy_datastate_meta(datastate, level)
             
         data_map = datastate.mirror_map()
         
@@ -177,7 +169,56 @@ class DataStorage(Plugin):
             if data_index is not None: pool.link(data_index)
         
         return new_datastate
-
+    
+    def import_datastate(self, src_pool, dst_pool, datastate, level=None):
+        
+        _check_valid_datastate(datastate)
+        new_datastate = self._copy_datastate_meta(datastate, level)
+            
+        data_map = datastate.mirror_map()
+        
+        for data_identifier, data_index in data_map.iteritems():
+            
+            if data_index is None: continue
+            
+            dst_contains_data = False
+            dst_structure_name = None
+            
+            src_data = src_pool.get(data_index)
+            src_structure_name = src_data.get_structure_name()
+            
+            # Check for matching indexes and data
+            if data_index in dst_pool:
+                
+                dst_data = dst_pool.get(data_index)
+                dst_structure_name = dst_data.get_structure_name()
+            
+            if (dst_structure_name is not None and
+                dst_structure_name == src_structure_name):
+            
+                dst_structure = self.get_structure(dst_structure_name)
+                
+                src_value = self._get_value(src_data)
+                dst_value = self._get_value(dst_data)
+                
+                try:
+                    if dst_structure.equals(src_value, dst_value):
+                        dst_contains_data = True
+                except Exception:
+                    msgStr = ("Comparison of data with identifier {} failed "
+                              "with an unexpected error:"
+                              "\n{}").format(data_identifier,
+                                             traceback.format_exc())
+                    raise Exception(msgStr)
+            
+            if not dst_contains_data:
+                data_index = dst_pool.add(src_data)
+            
+            dst_pool.link(data_index)
+            new_datastate.add_index(data_identifier, data_index)
+        
+        return new_datastate
+    
     def add_data_to_state(self, pool,
                                 datastate,
                                 data_identifier,
@@ -191,50 +232,50 @@ class DataStorage(Plugin):
             errStr = ("Given datastate is of wrong type. Expected DataState "
                       "but recieved {}.").format(datastate.__class__.__name__)
             raise ValueError(errStr)
-
+        
         if data_obj is None:
             
             data_index = None
-            
-        else:
         
+        else:
+            
             data_index = pool.add(data_obj)
             pool.link(data_index)
             
             log_msg = ('New "{}" data stored with index '
                        '{}').format(data_identifier, data_index)
             module_logger.info(log_msg)
-            
+        
         if (datastate.has_index(data_identifier) and
                 datastate.get_index(data_identifier) is not None):
             
             self.remove_data_from_state(pool, datastate, data_identifier)
-            
-        datastate.add_index(data_identifier, data_index)
-
-        return
         
+        datastate.add_index(data_identifier, data_index)
+        
+        return
+    
     def remove_state(self, pool, datastate):
-                
+        
         '''Remove an indentifier from the datastate and unlink it from the
         pool. If the data in the pool has no remaining links then delete it.'''
         
         if datastate.get_level() is not None:
             log_msg = ('Trying to remove datastate with level '
-                       '{}').format(datastate.get_level())           
+                       '{}').format(datastate.get_level())
         else:
             log_msg = 'Trying to remove datastate'
-            
+        
         module_logger.info(log_msg)
         
-        for data_identifier in datastate.get_identifiers():            
+        for data_identifier in datastate.get_identifiers():
             
             self.remove_data_from_state(pool,
                                         datastate,
                                         data_identifier)
-                                                            
-        return
         
+        return
+    
     def remove_data_from_state(self, pool, datastate, data_identifier):
         
         '''Remove an indentifier from the datastate and unlink it from the
@@ -255,9 +296,9 @@ class DataStorage(Plugin):
         module_logger.info(log_msg)
         
         if data_index is None: return
-            
+        
         pool.unlink(data_index)
-                
+        
         if not pool.has_link(data_index):
             
             pool.pop(data_index)
@@ -266,22 +307,22 @@ class DataStorage(Plugin):
                        '{} from pool').format(data_identifier,
                                               data_index)
             module_logger.info(log_msg)
-
-        return
         
+        return
+    
     def create_new_data(self, pool,
                               datastate,
                               data_catalog,
                               raw_data,
                               metadata):
-
+        
         if not self.is_valid(data_catalog, metadata.identifier):
-
+            
             errStr = "Data {} not in data catalog. Aborting.".format(
                                                         metadata.identifier)
             raise ValueError(errStr)
-            
-        data_form = metadata.structure            
+        
+        data_form = metadata.structure
         data_identifier = metadata.identifier
         
         if data_form not in self._structures:
@@ -289,23 +330,23 @@ class DataStorage(Plugin):
             errStr = ('Unrecognised structure "{}" for data identifier: '
                       '{}').format(data_form, data_identifier)
             raise KeyError(errStr)
-
+        
         # Create a data object
         if raw_data is None:
             
             data_obj = None
             
         else:
-
+            
             data_obj = self._get_data_obj(metadata, raw_data)
         
         self.add_data_to_state(pool, 
                                datastate,
                                data_identifier,
                                data_obj)
-                               
-        return
         
+        return
+    
 #    def modify_data(self, data_pool, datastate, data_identifier, raw_data):
 #
 #        '''Creates a copy of the data in the pool with the new raw data, and 
@@ -357,8 +398,7 @@ class DataStorage(Plugin):
         module_logger.debug(log_msg)
         
         data_obj = data_pool.get(data_index)
-        data_structure = self.get_structure(data_obj.get_structure_name())
-        value = data_structure(data_obj._data)
+        value = self._get_value(data_obj)
         
         return value
         
@@ -468,7 +508,24 @@ class DataStorage(Plugin):
         if variable_id in catalog_vars: result = True
 
         return result
-
+    
+    def _copy_datastate_meta(self, datastate,
+                                   level=None):
+    
+        if level is None: level = datastate.get_level()
+                
+        new_datastate = self.create_new_datastate(level)
+        if datastate.ismasked(): new_datastate.mask()
+        
+        return new_datastate
+    
+    def _get_value(self, data_obj):
+        
+        data_structure = self.get_structure(data_obj.get_structure_name())
+        value = data_structure(data_obj._data)
+        
+        return value
+    
     def _get_data_obj(self, metadata, raw):
         
         data_structure = self.get_structure(metadata.structure)
@@ -611,4 +668,14 @@ class DataStorage(Plugin):
         data_obj = Data(identifier, metadata.structure, data)
 
         return data_obj
-        
+
+
+def _check_valid_datastate(datastate):
+    
+    if not hasattr(datastate, "add_index"):
+            
+        errStr = ("Given datastate is of wrong type. Expected DataState "
+                  "but recieved {}.").format(datastate.__class__.__name__)
+        raise ValueError(errStr)
+    
+    return

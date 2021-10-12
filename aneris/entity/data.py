@@ -283,22 +283,22 @@ class DataPool(object):
         
 
 class BaseState(object):
-
+    
     '''Base class for NameState and DataState
     '''
     
     __slots__ = ["_data", "_level"]
-
+    
     def __init__(self, data_map=None, level=None):
-
+        
         self._data = None
         self._level = None
         
         self._data = self._init_data(data_map)
         self._level = self._init_level(level)
-
-        return
         
+        return
+    
     def _init_data(self, data_map):
         
         if data_map is None: return {}
@@ -308,13 +308,14 @@ class BaseState(object):
             errStr = "All keys in data_map must be strings."
             raise ValueError(errStr)
             
-        if not all(isinstance(x, basestring) for x in data_map.values()):
+        if not all(isinstance(x, (basestring, type(None)))
+                                    for x in data_map.values()):
             
-            errStr = "All values in data_map must be strings."
+            errStr = "All values in data_map must be strings or None."
             raise ValueError(errStr)
             
         return data_map
-        
+    
     def _init_level(self, level):
         
         result = None
@@ -322,42 +323,42 @@ class BaseState(object):
         if level is not None: result = level.lower()
         
         return result
-        
+    
     def get_level(self):
-
+        
         return self._level
-        
+    
     def get_identifiers(self):
-
+        
         return self._data.keys()
-        
+    
     def has_index(self, data_id):
-
-        '''Test if a variable is in a datastate'''
-
-        result = self._data.has_key(data_id)
-
-        return result
-
-    def get_index(self, data_id):
-
-        return self._data[data_id]
-
-    def add_index(self, data_id, data_index):
-
-        self._data[data_id] = data_index
         
+        '''Test if a variable is in a datastate'''
+        
+        result = self._data.has_key(data_id)
+        
+        return result
+    
+    def get_index(self, data_id):
+        
+        return self._data[data_id]
+    
+    def add_index(self, data_id, data_index):
+        
+        self._data[data_id] = data_index
+    
     def mirror_map(self):
         
         """This is a dangerous action if the data indexes are stored without
         updating the datapool."""
-
-        return self._data.copy()
         
+        return self._data.copy()
+    
     def count(self):
         
         return len(self._data)
-        
+    
     def dump(self):
         
         dump_dict = {"type": "BaseState",
@@ -365,7 +366,7 @@ class BaseState(object):
                      "data": self._data}
         
         return dump_dict
-          
+    
     def __len__(self):
         
         return self.count()

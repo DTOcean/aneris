@@ -43,7 +43,7 @@ class Simple(Structure):
 
     def get_value(self, data):
 
-        return deepcopy(data)
+        return data
 
 
 class SimpleList(Structure):
@@ -84,15 +84,20 @@ class SimpleList(Structure):
 
 
 class TableData(Structure):
-
+    
     '''Structure represented in a pandas dataframe'''
-
+    
     def get_data(self, raw, meta_data):
-
+        
         dataframe = pd.DataFrame(raw)
-
+        
         return dataframe
-
+    
     def get_value(self, data):
-
+        
         return data.copy()
+    
+    @classmethod
+    def equals(cls, left, right):
+        
+        return left.equals(right)

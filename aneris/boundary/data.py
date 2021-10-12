@@ -111,25 +111,25 @@ class DataDefinition(object):
 
 
 class Structure(object):
-
+    
     '''Boundary class to define creation and and access to Data objects. Also 
     contains methods used for automatic interfaces associated to the Structure
     class'''
     
     __metaclass__ = abc.ABCMeta
-
+    
     @abc.abstractmethod
     def get_data(self, raw, meta_data):
         
         """Returns a structured data object from raw input and meta data"""
-
+        
         return
-
+    
     @abc.abstractmethod
     def get_value(self, data):
-
-        return
         
+        return
+    
     def save_value(self, data, root_path):
         
         file_path = "{}.pkl".format(root_path)
@@ -137,9 +137,9 @@ class Structure(object):
         
         with open(file_path, "wb") as fstream:
             pickle.dump(data_value, fstream, -1)
-
-        return file_path
         
+        return file_path
+    
     def load_data(self, file_path):
             
         # Bypass the get_data method in this case, but it may be necesary to
@@ -150,13 +150,18 @@ class Structure(object):
                 
             with open(file_path, "rb") as fstream:
                 data = pickle.load(fstream)
-                
+        
         except ImportError:
             
             data = pd.read_pickle(file_path)
-
-        return data
         
+        return data
+    
+    @classmethod
+    def equals(cls, left, right): 
+        
+        return left == right
+    
     def __call__(self, data):
         
         value = self.get_value(data)
@@ -175,15 +180,16 @@ class Structure(object):
                              dt.tzinfo)):
             
             return value
-            
+        
         elif value is data:
             
             errStr = ("Value returned from structure {} must not be the "
                       "original data").format(self.__class__.__name__)
             raise RuntimeError(errStr)
-            
-        return value
         
+        return value
+
+
 class SerialBox(object):
     
     def __init__(self, identifier, load_dict):
@@ -192,5 +198,4 @@ class SerialBox(object):
         self.load_dict = load_dict
         
         return
-
 
