@@ -120,6 +120,8 @@ setup(name='aneris',
                'bootstrap-dds = aneris.utilities.files:bootstrap_dds_interface',
                'xl-merge = aneris.utilities.files:xl_merge_interface',
                ]},
+      package_data={'aneris': ['test/data/yaml/*.yaml']
+                    },
       tests_require=['mock',
                      'pytest',
                      'pytest-mock'
