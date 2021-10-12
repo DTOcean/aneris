@@ -101,7 +101,7 @@ $ conda install -y dtocean-dummy-module mock pytest pytest-mock
 Run the tests:
 
 ``` 
-$ py.test tests
+$ pytest tests
 ```
 
 ### Uninstall
