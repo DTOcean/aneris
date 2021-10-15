@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.1] - 2021-10-15
+
+### Changed
+
+-   Set minimum pandas version to 0.21 to ensure than read_excel without
+    sheet_name=None works consistently.
+-   Remove conda version pin
+
 ## [0.11.0] - 2021-10-12
 
 ### Added

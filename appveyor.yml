@@ -8,16 +8,16 @@
 #---------------------------------#
 
 # version format
-version: 0.11.0.build{build}
+version: 0.11.1.build{build}
 
 environment:
   matrix:
     - PYTHON_VERSION: 2.7
-      MINICONDA: C:\Miniconda
+      MINICONDA: C:\Miniconda3
       ARCH: "32"
       
     - PYTHON_VERSION: 2.7
-      MINICONDA: C:\Miniconda-x64
+      MINICONDA: C:\Miniconda3-x64
       ARCH: "64"
 
 init:
@@ -26,8 +26,9 @@ init:
 install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
-  - conda install --quiet conda=4.6.14
-  - conda info --all
+  - conda update python
+  - conda update --all
+  - conda info
   - conda create -n _aneris python=2.7 pip
   - activate _aneris
   - copy .condarc %CONDA_PREFIX%

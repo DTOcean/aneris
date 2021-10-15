@@ -3,7 +3,7 @@ attrdict
 et_xmlfile
 numpy
 openpyxl <3
-pandas >=0.20
+pandas >=0.21
 pywin32
 pyyaml
 sqlalchemy
